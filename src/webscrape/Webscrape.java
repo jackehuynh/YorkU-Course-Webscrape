@@ -19,44 +19,12 @@ public class Webscrape {
 
     public static void main(String[] args) {
         try {
-
             // initialize browser
-            //System.setProperty("webdriver.chrome.driver", "C:\\chromedriver.exe");
-            //WebDriver driver = new ChromeDriver();
+            System.setProperty("webdriver.chrome.driver", "C:\\chromedriver.exe");
             WebDriver driver = new HtmlUnitDriver();
-
-            // intialize first connection
-            Document doc = Jsoup.connect("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm").userAgent("Mozilla").get(); // first connection to site
-            Elements result = doc.select("ul.bodytext");
-            Elements result2 = result.select("a[href]");
-            String absHref = result2.attr("abs:href");
-
-            // initialize second connection @ course/session page
-            driver.get(absHref);    // connects to 'Subject' site
-            WebElement select = driver.findElement(By.name("sessionPopUp")); // find HTML/CSS selector name="sessionPopUp"
-            Select sessionSelect = new Select(select);  // create Select object with WebElement 'select' passed through
-            sessionSelect.selectByVisibleText("Summer 2018"); // selects the 'Summer 2018' option
-
-            WebElement select2 = driver.findElement(By.name("subjectPopUp"));
-            Select courseSelect = new Select(select2);
-            courseSelect.selectByValue("54"); // selects 'EECS course' option
-            //courseSelect.selectByVisibleText("EECS - Electrical Engineering and Computer Science - ( GS, LE ) ");
-
-            WebElement submitCourse = driver.findElement(By.name("3.10.7.5"));
-            submitCourse.click();   // clicks 'Choose course' button
-
-            List<WebElement> courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
-            List<WebElement> courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
-
-            int size = courseCode.size();
-            WriteToFile testWrite = new WriteToFile();
-            WriteToFile.setSize(size);
-
-            for (int i = 0; i < courseCode.size(); i++) {
-                String print = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
-                //System.out.println(courseCode.get(i).getText() + " - " + courseTitle.get(i).getText());
-                testWrite.Write(print);
-            }
+            // WebDriver driver = new ChromeDriver();
+            ScrapeBrowser courseScraper = new ScrapeBrowser(driver); // initializes scraper
+            courseScraper.startConnection();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -72,7 +40,6 @@ public class Webscrape {
 
     public static Document parse(String html) throws IOException {
         Document doc = Jsoup.connect(html).get();
-
         return doc;
     }
 }
@@ -99,9 +66,7 @@ public class Webscrape {
                 }
             }
            
-            }*/
-
- /*
+            }
             Document docs = Jsoup.connect("http://espn.go.com/mens-college-basketball/conferences/standings/_/id/2/year/2012/acc-conference").get();
      
             for (Element table: docs.select("table.tablehead")) {

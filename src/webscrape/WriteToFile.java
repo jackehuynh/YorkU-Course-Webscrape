@@ -9,39 +9,29 @@ import java.util.ArrayList;
 import java.io.PrintWriter;
 import java.io.File;
 
-/*
-    TO-DO:
-    Store courses in a DB somewhere
+/*  TO-DO:
+    - Store courses in a DB somewhere to access and view
  */
 public class WriteToFile {
 
-    public WriteToFile() {
+    private File fileLocation = new File("C:/Users/Jackeh/Desktop/test2.txt");;
+    private PrintWriter printWriter;
+    private String[] result;
 
+    public WriteToFile() throws FileNotFoundException {
+        printWriter = new PrintWriter(this.fileLocation);
     }
 
-    public static void Write(String data) {
-        ArrayList<String> store = new ArrayList<String>();
-        String print = data;
-        store.add(print);
-        int sizeArray;
+    public void setResult(String[] result) {
+        this.result = result;
+    }
 
-        try {
-            File file = new File("C:/Users/Jackeh/Desktop/test2.txt");
-            PrintWriter printWriter = new PrintWriter(file);
-            for (int i = 0; i < 10; i++) {
-                printWriter.println(print);
-            }
-            System.out.println(print);
-            printWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void printOutFile() {
+        for (int i = 0; i < this.result.length; i++) {
+            printWriter.println(this.result[i]);
+            System.out.println(result[i]);
         }
-
-    }
-
-    public static int setSize(int size) {
-        int sizeArray = size;
-        return sizeArray;
+        printWriter.close();
     }
 
 }
