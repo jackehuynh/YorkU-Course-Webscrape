@@ -81,8 +81,6 @@ public class ScrapeBrowser {
         select2 = driver.findElement(By.name("subjectPopUp"));
         List<WebElement> option = select2.findElements(By.tagName("option"));
         courseSelect = new Select(select2);
-        //courseSelect.selectByValue("54"); // selects 'EECS course' option w/ HtmlUnitDriver
-        //courseSelect.selectByVisibleText("EECS - Electrical Engineering and Computer Science - ( GS, LE ) "); // selects 'EECS course' option w/ ChromeDriver
 
         submitCourse = driver.findElement(By.name("3.10.7.5")); // finds CSS selector element for 'Choose course' button
 
@@ -109,8 +107,7 @@ public class ScrapeBrowser {
                 System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 this.printCourses();
             }
-            // returns back to the starting point (the 'Search Current Courses by Subject' part of the site)
-            this.returnBackToSubjectSection();
+            driver.navigate().back();
         }
 
         System.out.println("Scrape finished!");
@@ -135,7 +132,7 @@ public class ScrapeBrowser {
         courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
         courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
         result = new String[courseCode.size()];
-        if (courseCode.size() == 0) {
+        if (courseCode.isEmpty()) {
             System.out.println("----------NO COURSES FOUND----------");
         } else {
             for (int i = 0; i < courseCode.size(); i++) {
@@ -148,17 +145,10 @@ public class ScrapeBrowser {
         System.out.println("----------------------------------------------------------------------------------------------");
     }
 
-    public void returnBackToSubjectSection() {
-        driver.get(absHref);    // connects to 'Subject' site
+    public void connectToSubjectSection() {
+        driver.get(absHref); // connects to 'Subject' site
         WebElement select = driver.findElement(By.name("sessionPopUp")); // find HTML/CSS selector name="sessionPopUp"
         Select sessionSelect = new Select(select);  // create Select object with WebElement 'select' passed through
         sessionSelect.selectByVisibleText("Summer 2018"); // selects the 'Summer 2018' option
     }
-
-    public void outputToFile() throws FileNotFoundException {
-        WriteToFile printToFile = new WriteToFile();
-        printToFile.setResult(result);
-        printToFile.printOutFile();
-    }
-
 }
