@@ -10,6 +10,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
+import java.io.PrintWriter;
+import java.io.File;
+import java.io.FileWriter;
 
 /* To-Do:
     Added on Feb 18th:
@@ -20,7 +23,6 @@ public class ScrapeBrowser {
 
     private WebDriver driver;
     private String absHref;
-    private String[] result;
     private List<WebElement> courseCode;
     private List<WebElement> courseTitle;
     private WebElement select;
@@ -29,6 +31,8 @@ public class ScrapeBrowser {
     private Select courseSelect;
     private Select sessionSelect;
     private int courseCounter = 0;
+    private File fileLocation = new File("C:/Users/Jackeh/Desktop/test2.txt");
+    private PrintWriter printWriter;
 
     public ScrapeBrowser(WebDriver driver) throws IOException {
         this.driver = driver;
@@ -45,7 +49,7 @@ public class ScrapeBrowser {
     public void setCourseCounter(int counter) {
         this.courseCounter = counter;
     }
-    
+
     public int getCourseCounter() {
         return this.courseCounter;
     }
@@ -67,13 +71,13 @@ public class ScrapeBrowser {
         WebElement ulBodyText4 = ulBodyText3.findElement(By.tagName("href"));
          */
 
-        this.secondConnection(); // call next method
+        this.secondConnection();
     }
 
     public void secondConnection() throws IOException { // initialize second connection @ course/session page
 
-        //Initial connection to go through the site      
-        driver.get(this.getHref());    // connects to 'Subject' site
+        //another connection to go through the site      
+        driver.get(this.getHref());
         select = driver.findElement(By.name("sessionPopUp")); // find HTML/CSS selector name="sessionPopUp"
         sessionSelect = new Select(select);  // create Select object with WebElement 'select' passed through
         sessionSelect.selectByVisibleText("Summer 2018"); // selects the 'Summer 2018' option
@@ -82,16 +86,31 @@ public class ScrapeBrowser {
         List<WebElement> option = select2.findElements(By.tagName("option"));
         courseSelect = new Select(select2);
 
-        submitCourse = driver.findElement(By.name("3.10.7.5")); // finds CSS selector element for 'Choose course' button
+        printWriter = new PrintWriter(new FileWriter(fileLocation));
 
         /*
-        For-loop that clicks through each option 
-         */
+        Note to self: Will have to rewrite this entire thing at a later time...
+        */
+        
+//        printToFile = new WriteToFile();
+//        printToFile.setDeptSize(option.size());
+//        String[] result = new String[option.size()];
+//
+//        for (int i = 0; i < option.size(); i++) {
+//            result[i] = option.get(i).getText();
+//        }
+//        printToFile.setDeptArray(result);
+        submitCourse = driver.findElement(By.name("3.10.7.5")); // finds CSS selector element for 'Choose course' button
+
+        // For-loop that clicks through all the course options in the list
         for (int i = 0; i < option.size(); i++) {
             select2 = driver.findElement(By.name("subjectPopUp"));
             List<WebElement> options = select2.findElements(By.tagName("option"));
+
             System.out.println("Grabbing options, we are at option " + i + " in the list");
             System.out.println(i + 1 + ")" + " --> " + options.get(i).getText());
+            printWriter.println(options.get(i).getText());
+
             for (int k = i; k < i + 1; k++) {
                 String j = Integer.toString(k);
                 System.out.println("Loop is at: " + j);
@@ -105,12 +124,16 @@ public class ScrapeBrowser {
                 submitCourse.click();
                 System.out.println("Clicking course at loop: " + j);
                 System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                printWriter.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 this.printCourses();
             }
-            driver.navigate().back();
-        }
 
-        System.out.println("Scrape finished!");
+            driver.navigate().back(); // simulates button press on 'back' button in the head-less browser
+        }
+        printWriter.println("Courses offered in Summer 2018: " + courseCounter);
+        printWriter.println("Number of departments offering courses in Summer 2018: " + option.size());
+        printWriter.close();
+
         System.out.println("Courses offered in Summer 2018: " + courseCounter);
         System.out.println("Number of departments offering courses in Summer 2018: " + option.size());
 
@@ -131,16 +154,26 @@ public class ScrapeBrowser {
     public void printCourses() {
         courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
         courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
-        result = new String[courseCode.size()];
+        String[] result = new String[courseCode.size()];
+//        printToFile.setCourseAmount(courseCode.size());
+
         if (courseCode.isEmpty()) {
             System.out.println("----------NO COURSES FOUND----------");
+            printWriter.println("----------NO COURSES FOUND----------");
         } else {
             for (int i = 0; i < courseCode.size(); i++) {
                 result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
                 System.out.println(result[i]);
+                printWriter.println(result[i]);
             }
         }
+
         courseCounter += courseCode.size();
+
+//        printToFile.setCourseArray(result);
+//        printToFile.printOutFile();
+        printWriter.println("Number of courses offered in this department: " + courseCode.size());
+        printWriter.println("----------------------------------------------------------------------------------------------");
         System.out.println("Number of courses offered in this department: " + courseCode.size());
         System.out.println("----------------------------------------------------------------------------------------------");
     }

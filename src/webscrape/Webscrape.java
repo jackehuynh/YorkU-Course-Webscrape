@@ -13,31 +13,23 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class Webscrape {
 
     public static void main(String[] args) {
+        // remove error messages in console for testing purposes
+        Logger logger = Logger.getLogger("");
+        logger.setLevel(Level.OFF);
 
         try {
             // initialize browser
 //            System.setProperty("webdriver.chrome.driver", "C:\\chromedriver.exe");
 //            WebDriver driver = new ChromeDriver();   // GUI (Chrome) browser
             HtmlUnitDriver driver = new HtmlUnitDriver(true);    // head-less browser w/ JS enabled
-//            driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS); // waits to find a specified web element before moving on
+            driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS); // waits to find a specified web element before moving on
 
-            // remove error messages in console for testing purposes
-            Logger logger = Logger.getLogger("");
-            logger.setLevel(Level.OFF);
-
-            ScrapeBrowser courseScraper = new ScrapeBrowser(driver); // initializes scraper
+            ScrapeBrowser courseScraper = new ScrapeBrowser(driver);
             courseScraper.startConnection();
+            System.out.println("Scrape finished!");
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 }
-/*
-        printToFile = new WriteToFile();
-        printToFile.setDeptSize(option.size());
-        printToFile.setCourseArray(result);
-        printToFile.setCourseAmount(courseCode.size());
-        printToFile.printOutFile();
-
- */
