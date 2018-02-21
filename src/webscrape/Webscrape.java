@@ -22,7 +22,7 @@ public class Webscrape {
             System.setProperty("webdriver.chrome.driver", "C:\\chromedriver.exe");
             WebDriver driver = new ChromeDriver();   // GUI (Chrome) browser
 //            HtmlUnitDriver driver = new HtmlUnitDriver(true);    // head-less browser w/ JS enabled
-            driver.manage().timeouts().implicitlyWait(4, TimeUnit.SECONDS); // waits to find a specified web element before moving on
+            driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS); // waits to find a specified web element before moving on
 
 //            ScrapeBrowser courseScraper = new ScrapeBrowser(driver);
 //            courseScraper.startConnection();

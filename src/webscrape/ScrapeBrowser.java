@@ -31,7 +31,7 @@ public class ScrapeBrowser {
     private Select courseSelect;
     private Select sessionSelect;
     private int courseCounter = 0;
-    private File fileLocation = new File("C:/Users/Jackeh/Desktop/test2.txt");
+    private File fileLocation = new File("src/test2.txt");
     private PrintWriter printWriter;
 
     public ScrapeBrowser(WebDriver driver) throws IOException {
