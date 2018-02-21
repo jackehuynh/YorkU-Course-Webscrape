@@ -15,9 +15,9 @@ import java.io.File;
 import java.io.FileWriter;
 
 /* To-Do:
-    Added on Feb 18th:
-   - implement scanner to allow scraping of any subject entered by user
-   - improve/implement another class to manually scrape all subjects and display them separately (partially done - Feb 19th)
+ Added on Feb 18th:
+ - implement scanner to allow scraping of any subject entered by user
+ - improve/implement another class to manually scrape all subjects and display them separately (partially done - Feb 19th)
  */
 public class ScrapeBrowser {
 
@@ -61,14 +61,14 @@ public class ScrapeBrowser {
         absHref = result2.attr("abs:href");
         this.setabsHref(absHref);
         /*
-        To-Do: finish rewrite above with Selenium api as opposed to the JSoup one in the above to keep 
-        code consistent with everything else
+         To-Do: finish rewrite above with Selenium api as opposed to the JSoup one in the above to keep 
+         code consistent with everything else
         
-        driver.get("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm");
-        WebElement ulBodyText = driver.findElement(By.tagName("ul"));
-        WebElement ulBodyText2 = ulBodyText.findElement(By.name("bodytext"));
-        WebElement ulBodyText3 = ulBodyText2.findElement(By.tagName("li"));
-        WebElement ulBodyText4 = ulBodyText3.findElement(By.tagName("href"));
+         driver.get("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm");
+         WebElement ulBodyText = driver.findElement(By.tagName("ul"));
+         WebElement ulBodyText2 = ulBodyText.findElement(By.name("bodytext"));
+         WebElement ulBodyText3 = ulBodyText2.findElement(By.tagName("li"));
+         WebElement ulBodyText4 = ulBodyText3.findElement(By.tagName("href"));
          */
 
         this.secondConnection();
@@ -89,9 +89,8 @@ public class ScrapeBrowser {
         printWriter = new PrintWriter(new FileWriter(fileLocation));
 
         /*
-        Note to self: Will have to rewrite this entire thing at a later time...
-        */
-        
+         Note to self: Will have to rewrite this entire thing at a later time...
+         */
 //        printToFile = new WriteToFile();
 //        printToFile.setDeptSize(option.size());
 //        String[] result = new String[option.size()];
@@ -109,7 +108,7 @@ public class ScrapeBrowser {
 
             System.out.println("Grabbing options, we are at option " + i + " in the list");
             System.out.println(i + 1 + ")" + " --> " + options.get(i).getText());
-            printWriter.println(options.get(i).getText());
+            printWriter.println("*" + options.get(i).getText() + "\n");
 
             for (int k = i; k < i + 1; k++) {
                 String j = Integer.toString(k);
@@ -139,15 +138,15 @@ public class ScrapeBrowser {
 
 //        submitCourse.click();   // clicks 'Choose course' button
         /*
-        placeholder int value for result[]
-        need to rewrite this part later..
+         placeholder int value for result[]
+         need to rewrite this part later..
          */
- /*
-        result = new String[courseCode.size()];
-        for (int i = 0; i < courseCode.size(); i++) {
-            result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
-            System.out.println(result[i]);
-        }
+        /*
+         result = new String[courseCode.size()];
+         for (int i = 0; i < courseCode.size(); i++) {
+         result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
+         System.out.println(result[i]);
+         }
          */
     }
 
@@ -155,27 +154,27 @@ public class ScrapeBrowser {
         courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
         courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
         String[] result = new String[courseCode.size()];
-//        printToFile.setCourseAmount(courseCode.size());
+        String[] courseInfo = new String[courseCode.size()];
 
         if (courseCode.isEmpty()) {
             System.out.println("----------NO COURSES FOUND----------");
             printWriter.println("----------NO COURSES FOUND----------");
         } else {
             for (int i = 0; i < courseCode.size(); i++) {
-                result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
+                courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
+                driver.findElements(By.cssSelector("td[width='30%']"));
+                result[i] = courseCode.get(i).getText() + "\n" + courseTitle.get(i).getText();
                 System.out.println(result[i]);
                 printWriter.println(result[i]);
+
+//                driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
+//                driver.navigate().back();
+//                driver.findElement(By.xpath("/html[1]/body[1]/table[1]/tbody[1]/tr[2]/td[2]/table[1]/tbody[1]/tr[2]/td[1]/table[1]/tbody[1]/tr[1]/td[1]/p[2]/b[1]")).getText();
+//                driver.findElement(By.xpath("/html[1]/body[1]/table[1]/tbody[1]/tr[2]/td[2]/table[1]/tbody[1]/tr[2]/td[1]/table[1]/tbody[1]/tr[1]/td[1]/p[2]/b[1]")).toString();
             }
         }
 
         courseCounter += courseCode.size();
-
-//        printToFile.setCourseArray(result);
-//        printToFile.printOutFile();
-        printWriter.println("Number of courses offered in this department: " + courseCode.size());
-        printWriter.println("----------------------------------------------------------------------------------------------");
-        System.out.println("Number of courses offered in this department: " + courseCode.size());
-        System.out.println("----------------------------------------------------------------------------------------------");
     }
 
     public void connectToSubjectSection() {

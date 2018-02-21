@@ -27,9 +27,8 @@ public class Webscrape {
 
 //            ScrapeBrowser courseScraper = new ScrapeBrowser(driver);
 //            courseScraper.startConnection();
-
-              ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(driver);
-              courseInfoScraper.startConnection();
+            ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(driver);
+            courseInfoScraper.startConnection();
             System.out.println("Scrape finished!");
 
         } catch (IOException | AWTException e) {
