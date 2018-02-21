@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.FileWriter;
 
 /*
-    Scrape courses AND course description
+ Scrape courses AND course description
  */
 public class ScrapeCourseInfo {
 
@@ -28,7 +28,7 @@ public class ScrapeCourseInfo {
     private Select courseSelect;
     private Select sessionSelect;
     private int courseCounter = 0;
-    private File fileLocation = new File("C:/Users/Jackeh/Desktop/courseinfo.txt");
+    private File fileLocation = new File("src/courseinfo.txt");
     private PrintWriter printWriter;
 
     public ScrapeCourseInfo(WebDriver driver) throws IOException {
@@ -58,14 +58,14 @@ public class ScrapeCourseInfo {
         absHref = result2.attr("abs:href");
         this.setabsHref(absHref);
         /*
-        To-Do: finish rewrite above with Selenium api as opposed to the JSoup one in the above to keep 
-        code consistent with everything else
+         To-Do: finish rewrite above with Selenium api as opposed to the JSoup one in the above to keep 
+         code consistent with everything else
         
-        driver.get("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm");
-        WebElement ulBodyText = driver.findElement(By.tagName("ul"));
-        WebElement ulBodyText2 = ulBodyText.findElement(By.name("bodytext"));
-        WebElement ulBodyText3 = ulBodyText2.findElement(By.tagName("li"));
-        WebElement ulBodyText4 = ulBodyText3.findElement(By.tagName("href"));
+         driver.get("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm");
+         WebElement ulBodyText = driver.findElement(By.tagName("ul"));
+         WebElement ulBodyText2 = ulBodyText.findElement(By.name("bodytext"));
+         WebElement ulBodyText3 = ulBodyText2.findElement(By.tagName("li"));
+         WebElement ulBodyText4 = ulBodyText3.findElement(By.tagName("href"));
          */
 
         this.secondConnection();
@@ -136,13 +136,23 @@ public class ScrapeCourseInfo {
 //            printWriter.println("----------NO COURSES FOUND----------");
         } else {
             for (int i = 0; i < courseCode.size(); i++) {
+                if (i == 0) {
+                    driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
+                    driver.navigate().back();
+//                    driver.navigate().refresh();
+                } else {
+                    driver.findElements(By.cssSelector("td[width='30%']")).get(i + 1).click();
+                    driver.navigate().back();
+//                    driver.navigate().refresh();
+                }
+                courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
                 result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
-                int j = 0;
-                driver.findElements(By.cssSelector("td[width='30%']")).get(j).click();
+                System.out.println(result[i]);
 
+//                driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
+//                driver.navigate().back();
 //                driver.findElement(By.xpath("/html[1]/body[1]/table[1]/tbody[1]/tr[2]/td[2]/table[1]/tbody[1]/tr[2]/td[1]/table[1]/tbody[1]/tr[1]/td[1]/p[2]/b[1]")).getText();
 //                driver.findElement(By.xpath("/html[1]/body[1]/table[1]/tbody[1]/tr[2]/td[2]/table[1]/tbody[1]/tr[2]/td[1]/table[1]/tbody[1]/tr[1]/td[1]/p[2]/b[1]")).toString();
-//                System.out.println(result[i]);
 //                printWriter.println(result[i]);
             }
         }
