@@ -136,6 +136,9 @@ public class ScrapeCourseInfo {
 //            printWriter.println("----------NO COURSES FOUND----------");
         } else {
             for (int i = 0; i < courseCode.size(); i++) {
+                courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
+                result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
+                System.out.println(result[i]);
                 if (i == 0) {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
                     driver.navigate().back();
@@ -145,9 +148,6 @@ public class ScrapeCourseInfo {
                     driver.navigate().back();
 //                    driver.navigate().refresh();
                 }
-                courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
-                result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
-                System.out.println(result[i]);
 
 //                driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
 //                driver.navigate().back();
