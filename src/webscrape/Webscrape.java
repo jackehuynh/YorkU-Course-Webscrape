@@ -1,5 +1,6 @@
 package webscrape;
 
+import java.awt.AWTException;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -31,7 +32,7 @@ public class Webscrape {
               courseInfoScraper.startConnection();
             System.out.println("Scrape finished!");
 
-        } catch (IOException e) {
+        } catch (IOException | AWTException e) {
             e.printStackTrace();
         }
     }
