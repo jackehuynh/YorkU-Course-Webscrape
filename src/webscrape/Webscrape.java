@@ -19,7 +19,7 @@ public class Webscrape {
 
         try {
             // initialize browser
-            System.setProperty("webdriver.chrome.driver", "C:\\chromedriver.exe");
+            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
             WebDriver driver = new ChromeDriver();   // GUI (Chrome) browser
 //            HtmlUnitDriver driver = new HtmlUnitDriver(true);    // head-less browser w/ JS enabled
             driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS); // waits to find a specified web element before moving on
