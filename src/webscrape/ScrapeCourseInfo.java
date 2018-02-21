@@ -141,11 +141,11 @@ public class ScrapeCourseInfo {
                 System.out.println(result[i]);
                 if (i == 0) {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
-                    driver.navigate().back();
+//                    driver.navigate().back();
 //                    driver.navigate().refresh();
                 } else {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i + 1).click();
-                    driver.navigate().back();
+//                    driver.navigate().back();
 //                    driver.navigate().refresh();
                 }
 
