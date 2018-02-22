@@ -33,9 +33,18 @@ public class ScrapeBrowser {
     private int courseCounter = 0;
     private File fileLocation = new File("src/test2.txt");
     private PrintWriter printWriter;
+    private String session;
 
     public ScrapeBrowser(WebDriver driver) throws IOException {
         this.driver = driver;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
+    }
+
+    public String getSession() {
+        return this.session;
     }
 
     public String getHref() {
@@ -80,7 +89,7 @@ public class ScrapeBrowser {
         driver.get(this.getHref());
         select = driver.findElement(By.name("sessionPopUp")); // find HTML/CSS selector name="sessionPopUp"
         sessionSelect = new Select(select);  // create Select object with WebElement 'select' passed through
-        sessionSelect.selectByVisibleText("Summer 2018"); // selects the 'Summer 2018' option
+        sessionSelect.selectByVisibleText(this.getSession()); // selects the 'Summer 2018' option
 
         select2 = driver.findElement(By.name("subjectPopUp"));
         List<WebElement> option = select2.findElements(By.tagName("option"));

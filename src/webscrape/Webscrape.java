@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.WebDriver;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import java.util.Scanner;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -17,18 +18,46 @@ public class Webscrape {
         // remove error messages in console for testing purposes
         Logger logger = Logger.getLogger("");
         logger.setLevel(Level.OFF);
+        Scanner reader = new Scanner(System.in);
+
+        HtmlUnitDriver headless;
+        WebDriver chrome;
+
+        System.out.println("Type 1 for Headless browser, 2 for GUI (Chrome): ");
+        int response = reader.nextInt();
+        System.out.println("Which session? (1 - Fall/Winter) (2 - Summer 2018): ");
+        int response2 = reader.nextInt();
 
         try {
-            // initialize browser
-            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
-            WebDriver driver = new ChromeDriver();   // GUI (Chrome) browser
-//            HtmlUnitDriver driver = new HtmlUnitDriver(true);    // head-less browser w/ JS enabled
-            driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS); // waits to find a specified web element before moving on
+            if (response == 1) {
 
-//            ScrapeBrowser courseScraper = new ScrapeBrowser(driver);
-//            courseScraper.startConnection();
-            ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(driver);
-            courseInfoScraper.startConnection();
+                headless = new HtmlUnitDriver(true);    // head-less browser w/ JS enabled
+                headless.manage().timeouts().implicitlyWait(500, TimeUnit.MILLISECONDS);
+                ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(headless);
+
+                if (response2 == 1) {
+                    courseInfoScraper.setSession("Fall/Winter 2017-2018");
+                } else if (response2 == 2) {
+                    courseInfoScraper.setSession("Summer 2018");
+                }
+                courseInfoScraper.startConnection();
+
+            } else if (response == 2) {
+
+                System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+                chrome = new ChromeDriver();   // GUI (Chrome) browser
+                chrome.manage().timeouts().implicitlyWait(500, TimeUnit.MILLISECONDS);
+                ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(chrome);
+
+                if (response2 == 1) {
+                    courseInfoScraper.setSession("Fall/Winter 2017-2018");
+                } else if (response2 == 2) {
+                    courseInfoScraper.setSession("Summer 2018");
+                }
+                courseInfoScraper.startConnection();
+
+            }
+
             System.out.println("Scrape finished!");
 
         } catch (IOException | AWTException e) {
@@ -36,3 +65,13 @@ public class Webscrape {
         }
     }
 }
+
+            // initialize browser
+//            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+//            WebDriver driver = new ChromeDriver();   // GUI (Chrome) browser
+//            HtmlUnitDriver driver = new HtmlUnitDriver(true);    // head-less browser w/ JS enabled
+//            driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS); // waits to find a specified web element before moving on
+//            ScrapeBrowser courseScraper = new ScrapeBrowser(driver);
+//            courseScraper.startConnection();
+//            ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(driver);
+//            courseInfoScraper.startConnection();

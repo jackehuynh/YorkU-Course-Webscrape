@@ -16,9 +16,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileWriter;
 
-/*
- Scrape courses AND course description
- */
+// Scrape courses AND course description
 public class ScrapeCourseInfo {
 
     private WebDriver driver;
@@ -33,7 +31,7 @@ public class ScrapeCourseInfo {
     private int courseCounter = 0;
     private File fileLocation = new File("src/courseinfo.txt");
     private PrintWriter printWriter;
-    private Robot r;
+    private String session;
 
     public ScrapeCourseInfo(WebDriver driver) throws IOException {
         this.driver = driver;
@@ -41,6 +39,14 @@ public class ScrapeCourseInfo {
 
     public String getHref() {
         return this.absHref;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
+    }
+
+    public String getSession() {
+        return this.session;
     }
 
     public void setabsHref(String absHref) {
@@ -87,7 +93,7 @@ public class ScrapeCourseInfo {
         driver.get(this.getHref());
         select = driver.findElement(By.name("sessionPopUp")); // find HTML/CSS selector name="sessionPopUp"
         sessionSelect = new Select(select); // create Select object with WebElement 'select' passed through
-        sessionSelect.selectByVisibleText("Summer 2018"); // selects the 'Summer 2018' option
+        sessionSelect.selectByVisibleText(this.getSession()); // selects the 'given session' option
 
         select2 = driver.findElement(By.name("subjectPopUp"));
         List<WebElement> option = select2.findElements(By.tagName("option"));
@@ -102,7 +108,7 @@ public class ScrapeCourseInfo {
         driver.get(this.getHref());
         select = driver.findElement(By.name("sessionPopUp")); // find HTML/CSS selector name="sessionPopUp"
         sessionSelect = new Select(select); // create Select object with WebElement 'select' passed through
-        sessionSelect.selectByVisibleText("Summer 2018"); // selects the 'Summer 2018' option
+        sessionSelect.selectByVisibleText(this.getSession()); // selects the 'given session' option
 
         select2 = driver.findElement(By.name("subjectPopUp"));
         List<WebElement> option = select2.findElements(By.tagName("option"));
@@ -175,24 +181,24 @@ public class ScrapeCourseInfo {
                     String description = driver.findElements(By.tagName("p")).get(1).getText();
                     String description2 = driver.findElements(By.tagName("p")).get(2).getText();
                     String description3 = driver.findElements(By.tagName("p")).get(3).getText();
-                    System.out.println(description);
-                    System.out.println(description2);
-                    System.out.println(description3);
-                    driver.navigate().back();
-                    driver.navigate().refresh();
+//                    System.out.println(description);
+//                    System.out.println(description2);
+                    System.out.println("[" + description3 + "]");
+                    printWriter.println(description3);
                 } else {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i + i).click();
 //                    String description = driver.findElement(By.xpath("/html/body/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/p[3]")).getText();
                     String description = driver.findElements(By.tagName("p")).get(1).getText();
                     String description2 = driver.findElements(By.tagName("p")).get(2).getText();
                     String description3 = driver.findElements(By.tagName("p")).get(3).getText();
-                    System.out.println(description);
-                    System.out.println(description2);
-                    System.out.println(description3);
-                    driver.navigate().back();
-                    driver.navigate().refresh();
-                }
+//                    System.out.println(description);
+//                    System.out.println(description2);
+                    System.out.println("[" + description3 + "]");
+                    printWriter.println("[" + description3 + "]");
 
+                }
+                driver.navigate().back();
+                driver.navigate().refresh();
             }
         }
         courseCounter += courseCode.size();
