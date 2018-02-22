@@ -78,6 +78,24 @@ public class ScrapeCourseInfo {
         this.secondConnection();
     }
 
+    public void returnToSubject() throws IOException {
+        Document doc = Jsoup.connect("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm").userAgent("Mozilla").get(); // first
+        Elements result = doc.select("ul.bodytext");
+        Elements result2 = result.select("a[href]");
+        absHref = result2.attr("abs:href");
+        this.setabsHref(absHref);
+        driver.get(this.getHref());
+        select = driver.findElement(By.name("sessionPopUp")); // find HTML/CSS selector name="sessionPopUp"
+        sessionSelect = new Select(select); // create Select object with WebElement 'select' passed through
+        sessionSelect.selectByVisibleText("Summer 2018"); // selects the 'Summer 2018' option
+
+        select2 = driver.findElement(By.name("subjectPopUp"));
+        List<WebElement> option = select2.findElements(By.tagName("option"));
+        courseSelect = new Select(select2);
+        submitCourse = driver.findElement(By.name("3.10.7.5")); // finds CSS selector element for 'Choose course' button
+
+    }
+
     public void secondConnection() throws IOException, AWTException { // initialize second connection @ course/session page
 
         // another connection to go through the site
@@ -116,13 +134,12 @@ public class ScrapeCourseInfo {
                 submitCourse.click();
                 System.out.println("Clicking course at loop: " + j);
 
-                System.out.println(
-                        "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 // printWriter.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 this.printCourses();
             }
-
-            driver.navigate().back(); // simulates button press on 'back' button in the head-less browser
+            this.returnToSubject();
+//            driver.get(absHref); // simulates button press on 'back' button in the head-less browser
         }
         // printWriter.println("Courses offered in Summer 2018: " + courseCounter);
         // printWriter.println("Number of departments offering courses in Summer 2018: "
@@ -139,45 +156,41 @@ public class ScrapeCourseInfo {
         courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
         String[] result = new String[courseCode.size()];
         String[] courseInfo = new String[courseCode.size()];
-        r = new Robot();
+
         if (courseCode.isEmpty()) {
             System.out.println("----------NO COURSES FOUND----------");
             // printWriter.println("----------NO COURSES FOUND----------");
         } else {
             for (int i = 0; i < courseCode.size(); i++) {
                 courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
+                courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
+
                 result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
                 System.out.println(result[i]);
 
                 if (i == 0) {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
-
-                    String parentHandle = driver.getWindowHandle();
-                    String parentURL = driver.getCurrentUrl();
-                    String newURL = driver.getCurrentUrl();
-                    r.keyPress(KeyEvent.VK_CONTROL);
-                    r.keyPress(KeyEvent.VK_T);
-                    r.keyRelease(KeyEvent.VK_CONTROL);
-                    r.keyRelease(KeyEvent.VK_T);
-                    driver.get(newURL);
                     // parse description here
-                    System.out.println(driver.findElement(By.xpath("/html/body/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/p[3]")).getText());
-                    // r.keyPress(KeyEvent.VK_CONTROL);
-                    // r.keyPress(KeyEvent.VK_W);
-                    // r.keyRelease(KeyEvent.VK_CONTROL);
-                    // r.keyRelease(KeyEvent.VK_W);
-                    r.keyPress(KeyEvent.VK_CONTROL);
-                    r.keyPress(KeyEvent.VK_TAB);
-                    r.keyRelease(KeyEvent.VK_CONTROL);
-                    r.keyRelease(KeyEvent.VK_TAB);
-                    driver.switchTo().window(parentHandle);
-//                    driver.navigate().back();
-//                    driver.navigate().refresh();
+//                    String description = driver.findElement(By.xpath("/html/body/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/p[3]")).getText();
+                    String description = driver.findElements(By.tagName("p")).get(1).getText();
+                    String description2 = driver.findElements(By.tagName("p")).get(2).getText();
+                    String description3 = driver.findElements(By.tagName("p")).get(3).getText();
+                    System.out.println(description);
+                    System.out.println(description2);
+                    System.out.println(description3);
+                    driver.navigate().back();
+                    driver.navigate().refresh();
                 } else {
-                    driver.findElements(By.cssSelector("td[width='30%']")).get(i + 1).click();
-                    System.out.println(driver.findElement(By.xpath("/html/body/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/p[3]")).getText());
-//                    driver.navigate().back();
-//                    driver.navigate().refresh();
+                    driver.findElements(By.cssSelector("td[width='30%']")).get(i + i).click();
+//                    String description = driver.findElement(By.xpath("/html/body/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/p[3]")).getText();
+                    String description = driver.findElements(By.tagName("p")).get(1).getText();
+                    String description2 = driver.findElements(By.tagName("p")).get(2).getText();
+                    String description3 = driver.findElements(By.tagName("p")).get(3).getText();
+                    System.out.println(description);
+                    System.out.println(description2);
+                    System.out.println(description3);
+                    driver.navigate().back();
+                    driver.navigate().refresh();
                 }
 
             }
