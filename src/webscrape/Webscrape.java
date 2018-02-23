@@ -5,11 +5,10 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.WebDriver;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 import java.util.Scanner;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class Webscrape {
@@ -20,9 +19,8 @@ public class Webscrape {
         logger.setLevel(Level.OFF);
         Scanner reader = new Scanner(System.in);
 
-        HtmlUnitDriver headless;
         WebDriver chrome;
-
+        System.out.println("GUI is mainly for debug/testing. Headless is for performance and final product.");
         System.out.println("Type 1 for Headless browser, 2 for GUI (Chrome): ");
         int response = reader.nextInt();
         System.out.println("Which session? (1 - Fall/Winter) (2 - Summer 2018): ");
@@ -30,10 +28,13 @@ public class Webscrape {
 
         try {
             if (response == 1) {
+                System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
 
-                headless = new HtmlUnitDriver(true);    // head-less browser w/ JS enabled
-                headless.manage().timeouts().implicitlyWait(500, TimeUnit.MILLISECONDS);
-                ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(headless);
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.addArguments("--headless");
+                ChromeDriver driver = new ChromeDriver(chromeOptions);
+                
+                HeadlessScrape courseInfoScraper = new HeadlessScrape(driver);
 
                 if (response2 == 1) {
                     courseInfoScraper.setSession("Fall/Winter 2017-2018");
@@ -46,7 +47,7 @@ public class Webscrape {
 
                 System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
                 chrome = new ChromeDriver();   // GUI (Chrome) browser
-                chrome.manage().timeouts().implicitlyWait(500, TimeUnit.MILLISECONDS);
+                chrome.manage().timeouts().implicitlyWait(1500, TimeUnit.MILLISECONDS);
                 ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(chrome);
 
                 if (response2 == 1) {
@@ -65,13 +66,3 @@ public class Webscrape {
         }
     }
 }
-
-            // initialize browser
-//            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
-//            WebDriver driver = new ChromeDriver();   // GUI (Chrome) browser
-//            HtmlUnitDriver driver = new HtmlUnitDriver(true);    // head-less browser w/ JS enabled
-//            driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS); // waits to find a specified web element before moving on
-//            ScrapeBrowser courseScraper = new ScrapeBrowser(driver);
-//            courseScraper.startConnection();
-//            ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(driver);
-//            courseInfoScraper.startConnection();
