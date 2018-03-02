@@ -31,7 +31,7 @@ public class ScrapeBrowser {
     private Select courseSelect;
     private Select sessionSelect;
     private int courseCounter = 0;
-    private File fileLocation = new File("src/test2.txt");
+    private File fileLocation = new File("src/courseList.txt");
     private PrintWriter printWriter;
     private String session;
 
@@ -115,23 +115,19 @@ public class ScrapeBrowser {
             select2 = driver.findElement(By.name("subjectPopUp"));
             List<WebElement> options = select2.findElements(By.tagName("option"));
 
-            System.out.println("Grabbing options, we are at option " + i + " in the list");
             System.out.println(i + 1 + ")" + " --> " + options.get(i).getText());
             printWriter.println("*" + options.get(i).getText() + "\n");
 
             for (int k = i; k < i + 1; k++) {
                 String j = Integer.toString(k);
-                System.out.println("Loop is at: " + j);
 
                 select2 = driver.findElement(By.name("subjectPopUp"));
                 courseSelect = new Select(select2);
                 courseSelect.selectByValue(j);
-                System.out.println("Selecting course number: " + j);
 
                 submitCourse = driver.findElement(By.name("3.10.7.5"));
                 submitCourse.click();
                 System.out.println("Clicking course at loop: " + j);
-                System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 printWriter.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 this.printCourses();
             }
@@ -145,25 +141,12 @@ public class ScrapeBrowser {
         System.out.println("Courses offered in Summer 2018: " + courseCounter);
         System.out.println("Number of departments offering courses in Summer 2018: " + option.size());
 
-//        submitCourse.click();   // clicks 'Choose course' button
-        /*
-         placeholder int value for result[]
-         need to rewrite this part later..
-         */
-        /*
-         result = new String[courseCode.size()];
-         for (int i = 0; i < courseCode.size(); i++) {
-         result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
-         System.out.println(result[i]);
-         }
-         */
     }
 
     public void printCourses() {
         courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
         courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
         String[] result = new String[courseCode.size()];
-        String[] courseInfo = new String[courseCode.size()];
 
         if (courseCode.isEmpty()) {
             System.out.println("----------NO COURSES FOUND----------");

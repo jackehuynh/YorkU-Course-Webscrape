@@ -30,7 +30,7 @@ public class HeadlessScrape {
     private Select courseSelect;
     private Select sessionSelect;
     private int courseCounter = 0;
-    private File fileLocation = new File("src/courseinfo.txt");
+    private File fileLocation = new File("src/fullcourseinfo.txt");
     private PrintWriter printWriter;
     private String session;
     
