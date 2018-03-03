@@ -8,14 +8,11 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.PrintWriter;
 import java.awt.AWTException;
 import java.io.File;
 import java.io.FileWriter;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 // Headless Browser Scraper (chrome headless)
 public class HeadlessScrape {
@@ -33,6 +30,8 @@ public class HeadlessScrape {
     private File fileLocation = new File("src/fullcourseinfo.txt");
     private PrintWriter printWriter;
     private String session;
+    int keepTrack = 0;
+    int keepTrack2 = 0;
     
     public HeadlessScrape(ChromeDriver driver) throws IOException {
         this.driver = driver;
@@ -121,7 +120,6 @@ public class HeadlessScrape {
             select2 = driver.findElement(By.name("subjectPopUp"));
             List<WebElement> options = select2.findElements(By.tagName("option"));
 
-            System.out.println("Grabbing options, we are at option " + i + " in the list");
             System.out.println(i + 1 + ")" + " --> " + options.get(i).getText());
             printWriter.println(options.get(i).getText());
 
@@ -174,27 +172,14 @@ public class HeadlessScrape {
                 if (i == 0) {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
                     // parse description here
-                    // String description =
-                    // driver.findElement(By.xpath("/html/body/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/p[3]")).getText();
-                    // String description = driver.findElements(By.tagName("p")).get(1).getText();
-                    // String description2 = driver.findElements(By.tagName("p")).get(2).getText();
-                    WebDriverWait w = new WebDriverWait(driver, 2);
-                    String description3 = driver.findElements(By.tagName("p")).get(3).getText();
-                    // System.out.println(description);
-                    // System.out.println(description2);
-                    System.out.println("[" + description3 + "]");
-                    printWriter.println("[" + description3 + "]");
+                    String description = driver.findElements(By.tagName("p")).get(3).getText();
+                    System.out.println("[" + description + "]");
+                    printWriter.println("[" + description + "]");
                 } else {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i + i).click();
-                    // driver.findElement(By.xpath("/html/body/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/p[3]")).getText();
-                    // String description = driver.findElements(By.tagName("p")).get(1).getText();
-                    // String description2 = driver.findElements(By.tagName("p")).get(2).getText();
-                    WebDriverWait w = new WebDriverWait(driver, 2);
-                    String description3 = driver.findElements(By.tagName("p")).get(3).getText();
-                    // System.out.println(description);
-                    // System.out.println(description2);
-                    System.out.println("[" + description3 + "]");
-                    printWriter.println("[" + description3 + "]");
+                    String description = driver.findElements(By.tagName("p")).get(3).getText();
+                    System.out.println("[" + description + "]");
+                    printWriter.println("[" + description + "]");
 
                 }
                 driver.navigate().back();
