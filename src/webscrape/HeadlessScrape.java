@@ -14,25 +14,18 @@ import java.io.File;
 import java.io.FileWriter;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-// Headless Browser Scraper (chrome headless)
+// Headless Browser Scraper (chrome headless), this is the final product
 public class HeadlessScrape {
 
-    private String absHref;
-    private List<WebElement> courseCode;
-    private List<WebElement> courseTitle;
-    private WebElement select;
-    private WebElement select2;
+    private String absHref, session;
+    private List<WebElement> courseCode, courseTitle;
+    private WebElement select, select2, submitCourse;
     private ChromeDriver driver;
-    private WebElement submitCourse;
-    private Select courseSelect;
-    private Select sessionSelect;
-    private int courseCounter = 0;
-    private File fileLocation = new File("src/fullcourseinfo.txt");
+    private Select courseSelect, sessionSelect;
+    private File fileLocation;
     private PrintWriter printWriter;
-    private String session;
-    int keepTrack = 0;
-    int keepTrack2 = 0;
-    
+    private int keepTrack, keepTrack2, courseCounter, counter;
+
     public HeadlessScrape(ChromeDriver driver) throws IOException {
         this.driver = driver;
     }
@@ -59,6 +52,26 @@ public class HeadlessScrape {
 
     public int getCourseCounter() {
         return this.courseCounter;
+    }
+
+    public void setKeepTrack(int a) {
+        keepTrack = a;
+    }
+
+    public void setKeepTrack2(int a) {
+        keepTrack2 = a;
+    }
+
+    public int getTrack1() {
+        return keepTrack;
+    }
+
+    public int getTrack2() {
+        return keepTrack2;
+    }
+
+    public void setFileLocation(String location) {
+        fileLocation = new File(location);
     }
 
     public void startConnection() throws IOException, AWTException { // initialize first connection
@@ -110,9 +123,7 @@ public class HeadlessScrape {
         select2 = driver.findElement(By.name("subjectPopUp"));
         List<WebElement> option = select2.findElements(By.tagName("option"));
         courseSelect = new Select(select2);
-
         printWriter = new PrintWriter(new FileWriter(fileLocation));
-
         submitCourse = driver.findElement(By.name("3.10.7.5")); // finds CSS selector element for 'Choose course' button
 
         // For-loop that clicks through all the course options in the list
@@ -126,6 +137,8 @@ public class HeadlessScrape {
             for (int k = i; k < i + 1; k++) {
                 String j = Integer.toString(k);
                 // System.out.println("Loop is at: " + j);
+                keepTrack = k;
+                this.setKeepTrack(keepTrack);
 
                 select2 = driver.findElement(By.name("subjectPopUp"));
                 courseSelect = new Select(select2);
@@ -137,7 +150,7 @@ public class HeadlessScrape {
                 // System.out.println("Clicking course at loop: " + j);
 
                 // System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                printWriter.println( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                printWriter.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 this.printCourses();
             }
             this.returnToSubject();
@@ -151,7 +164,62 @@ public class HeadlessScrape {
 
     }
 
-    public void printCourses() throws AWTException {
+    public void tempFix() throws IOException {
+        this.returnToSubject();
+        select2 = driver.findElement(By.name("subjectPopUp"));
+        courseSelect = new Select(select2);
+        String j = Integer.toString(this.getTrack1());
+        courseSelect.selectByValue(j);
+
+        submitCourse = driver.findElement(By.name("3.10.7.5"));
+        submitCourse.click();
+
+        courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
+        courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
+        String[] result = new String[courseCode.size()];
+        String[] courseInfo = new String[courseCode.size()];
+
+        if (courseCode.isEmpty()) {
+            System.out.println("----------NO COURSES FOUND----------");
+            // printWriter.println("----------NO COURSES FOUND----------");
+        } else {
+            for (int i = keepTrack2; i < courseCode.size(); i++) {
+                courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
+                courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
+
+                result[i] = courseCode.get(i).getText() + " - " + courseTitle.get(i).getText();
+                System.out.println(result[i]);
+                printWriter.println(result[i]);
+
+                if (i == 0) {
+                    driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
+                    // parse description here
+                    String description = driver.findElements(By.tagName("p")).get(3).getText();
+//                    System.out.println("[" + description + "]");
+                    printWriter.println("[" + description + "]");
+                } else {
+                    driver.findElements(By.cssSelector("td[width='30%']")).get(i + i).click();
+                    String description = driver.findElements(By.tagName("p")).get(3).getText();
+//                    System.out.println("[" + description + "]");
+                    printWriter.println("[" + description + "]");
+                }
+
+                keepTrack2 = i;
+                keepTrack2++;
+
+                driver.navigate().back();
+                driver.navigate().refresh();
+                if (driver.findElements(By.cssSelector("td[width='16%']")).isEmpty()) {
+                    counter++;
+                    System.out.println("TIMED OUT TO SUBJECT PAGE : " + counter);
+                    this.tempFix();
+                    break;
+                }
+            }
+        }
+    }
+
+    public void printCourses() throws AWTException, IOException {
         courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
         courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
         String[] result = new String[courseCode.size()];
@@ -173,26 +241,35 @@ public class HeadlessScrape {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
                     // parse description here
                     String description = driver.findElements(By.tagName("p")).get(3).getText();
-                    System.out.println("[" + description + "]");
+//                    System.out.println("[" + description + "]");
                     printWriter.println("[" + description + "]");
                 } else {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i + i).click();
                     String description = driver.findElements(By.tagName("p")).get(3).getText();
-                    System.out.println("[" + description + "]");
+//                    System.out.println("[" + description + "]");
                     printWriter.println("[" + description + "]");
-
                 }
+
+                keepTrack2 = i;
+                keepTrack2++;
+
                 driver.navigate().back();
                 driver.navigate().refresh();
+                if (driver.findElements(By.cssSelector("td[width='16%']")).isEmpty()) {
+                    counter++;
+                    System.out.println("TIMED OUT TO SUBJECT PAGE : " + counter);
+                    this.tempFix();
+                    break;
+                }
             }
         }
-        courseCounter += courseCode.size();
+//        courseCounter += courseCode.size();
         // printWriter.println("Number of courses offered in this department: " +
         // courseCode.size());
-        // printWriter.println("----------------------------------------------------------------------------------------------");
-        System.out.println("Number of courses offered in this department: " + courseCode.size());
-        System.out.println(
-                "----------------------------------------------------------------------------------------------");
+        printWriter.println("----------------------------------------------------------------------------------------------");
+//        System.out.println("Number of courses offered in this department: " + courseCode.size());
+//        System.out.println(
+//                "----------------------------------------------------------------------------------------------");
     }
 
     public void connectToSubjectSection() {

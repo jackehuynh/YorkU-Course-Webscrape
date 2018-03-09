@@ -13,28 +13,26 @@ import java.io.PrintWriter;
 import java.awt.AWTException;
 import java.io.File;
 import java.io.FileWriter;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 // Scrape courses AND course description via GUI browser (testing purposes only)
 public class ScrapeCourseInfo {
 
-    private WebDriver driver;
-    private String absHref;
-    private List<WebElement> courseCode;
-    private List<WebElement> courseTitle;
-    private WebElement select;
-    private WebElement select2;
-    private WebElement submitCourse;
-    private Select courseSelect;
-    private Select sessionSelect;
-    private int courseCounter = 0;
-    private File fileLocation = new File("src/courseinfo.txt");
+    private String absHref, session;
+    private List<WebElement> courseCode, courseTitle;
+    private WebElement select, select2, submitCourse;
+    private ChromeDriver driver;
+    private Select courseSelect, sessionSelect;
+    private File fileLocation;
     private PrintWriter printWriter;
-    private String session;
-    int keepTrack = 0;  // placeholder to keep track of iteration in loop
-    int keepTrack2 = 0; // placeholder to keep track of iteration in loop
+    private int keepTrack = 0, keepTrack2 = 0, courseCounter = 0;
 
-    public ScrapeCourseInfo(WebDriver driver) throws IOException {
+    public ScrapeCourseInfo(ChromeDriver driver) throws IOException {
         this.driver = driver;
+    }
+
+    public void setFileLocation(String location) {
+        fileLocation = new File(location);
     }
 
     public String getHref() {
@@ -149,11 +147,9 @@ public class ScrapeCourseInfo {
                 select2 = driver.findElement(By.name("subjectPopUp"));
                 courseSelect = new Select(select2);
                 courseSelect.selectByValue(j);
-                // System.out.println("Selecting course number: " + j);
 
                 submitCourse = driver.findElement(By.name("3.10.7.5"));
                 submitCourse.click();
-                // System.out.println("Clicking course at loop: " + j);
 
                 // System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 printWriter.println(
@@ -200,29 +196,56 @@ public class ScrapeCourseInfo {
                 printWriter.println(result[i]);
 
                 if (i == 0) {
-                    driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
-                    // parse description here
-                    String description = driver.findElements(By.tagName("p")).get(3).getText();
-                    System.out.println("[" + description + "]");
-                    printWriter.println("[" + description + "]");
+                    driver.findElements(By.cssSelector("td[width='30%']")).get(i + i).click();
                 } else {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i + i).click();
-                    String description = driver.findElements(By.tagName("p")).get(3).getText();
-                    System.out.println("[" + description + "]");
-                    printWriter.println("[" + description + "]");
+                }
 
+                String description = driver.findElements(By.tagName("p")).get(3).getText();
+                System.out.println("[" + description + "]");
+                printWriter.println("[" + description + "]");
+
+                List<WebElement> locateFirstTable = driver.findElements(By.cssSelector("table[width='100%']")); // finds the section in the HTML page that encapsulates all the course tables
+                WebElement locateCourseTables = locateFirstTable.get(4); // grabs the specific table element corresponding to the course timetable
+                List<WebElement> singleTable = locateCourseTables.findElements(By.tagName("tr"));
+
+                List<WebElement> getTermAndSection = driver.findElements(By.cssSelector("font[color='#ffffff']")); // gets the HTML element stating the Term & Section
+                List<WebElement> getSectionDirector = driver.findElements(By.cssSelector("td[colspan='3']"));
+
+                int b = 1;
+                for (int x = 0; x < getTermAndSection.size(); x++) {
+                    System.out.println(getTermAndSection.get(x).getText()); // prints term & section
+                    if (x == 0) {
+                        /*
+                        It's finding the "a href" tag b/c if a course is available there'll be a href tag,
+                        if a section is cancelled, there's usually no href tags.
+                         */
+                        if (!getSectionDirector.get(x + 1).findElements(By.tagName("a")).isEmpty()) {
+                            String director = getSectionDirector.get(x + 1).findElement(By.tagName("a")).getText();
+                            System.out.println("Section Director: " + director);
+                        } else {
+                            System.out.println("Section Cancelled OR This is an Online Course, Please check the York's Website for more information");
+                        }
+                    } else {
+                        if (!getSectionDirector.get(b).findElements(By.tagName("a")).isEmpty()) {
+                            String director = getSectionDirector.get(b).findElement(By.tagName("a")).getText();
+                            System.out.println("Section Director: " + director);
+                        } else {
+                            System.out.println("Section Cancelled OR This is an Online Course, Please check the York's Website for more information");
+                        }
+                    }
+                    b += 2;
                 }
                 keepTrack2 = i;
-                this.setKeepTrack2(keepTrack2);
+                keepTrack2++;
                 driver.navigate().back();
                 driver.navigate().refresh();
-                if (courseCode.isEmpty()) {
+                if (driver.findElements(By.cssSelector("td[width='16%']")).isEmpty()) {
                     this.tempFix();
                     break;
                 }
             }
         }
-
     }
 
     public void printCourses() throws AWTException, IOException {
@@ -244,32 +267,61 @@ public class ScrapeCourseInfo {
                 printWriter.println(result[i]);
 
                 if (i == 0) {
-                    driver.findElements(By.cssSelector("td[width='30%']")).get(i).click();
-                    // parse description here
-                    String description = driver.findElements(By.tagName("p")).get(3).getText();
-                    System.out.println("[" + description + "]");
-                    printWriter.println("[" + description + "]");
+                    driver.findElements(By.cssSelector("td[width='30%']")).get(i + i).click();
                 } else {
                     driver.findElements(By.cssSelector("td[width='30%']")).get(i + i).click();
-                    String description = driver.findElements(By.tagName("p")).get(3).getText();
-                    System.out.println("[" + description + "]");
-                    printWriter.println("[" + description + "]");
-
                 }
+
+                String description = driver.findElements(By.tagName("p")).get(3).getText();
+                System.out.println("[" + description + "]");
+                printWriter.println("[" + description + "]");
+
+                List<WebElement> locateFirstTable = driver.findElements(By.cssSelector("table[width='100%']")); // finds the section in the HTML page that encapsulates all the course tables
+                WebElement locateCourseTables = locateFirstTable.get(4); // grabs the specific table element corresponding to the course timetable
+                List<WebElement> singleTable = locateCourseTables.findElements(By.tagName("tr"));
+
+                List<WebElement> getTermAndSection = driver.findElements(By.cssSelector("font[color='#ffffff']")); // gets the HTML element stating the Term & Section
+                List<WebElement> getSectionDirector = driver.findElements(By.cssSelector("td[colspan='3']"));
+
+                int b = 1;
+                for (int x = 0; x < getTermAndSection.size(); x++) {
+                    System.out.println(getTermAndSection.get(x).getText()); // prints term & section
+                    if (x == 0) {
+                        /*
+                        It's finding the "a href" tag b/c if a course is available there'll be a href tag,
+                        if a section is cancelled, there's usually no href tags.
+                         */
+                        if (!getSectionDirector.get(x + 1).findElements(By.tagName("a")).isEmpty()) {
+                            String director = getSectionDirector.get(x + 1).findElement(By.tagName("a")).getText();
+                            System.out.println("Section Director: " + director);
+                        } else {
+                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
+                        }
+                    } else {
+                        if (!getSectionDirector.get(b).findElements(By.tagName("a")).isEmpty()) {
+                            String director = getSectionDirector.get(b).findElement(By.tagName("a")).getText();
+                            System.out.println("Section Director: " + director);
+                        } else {
+                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
+                        }
+                    }
+                    b += 2;
+                }
+
                 keepTrack2 = i;
-                this.setKeepTrack2(keepTrack2);
+                keepTrack2++;
                 driver.navigate().back();
                 driver.navigate().refresh();
-                if (courseCode.isEmpty()) {
+                if (driver.findElements(By.cssSelector("td[width='16%']")).isEmpty()) {
                     this.tempFix();
                     break;
                 }
             }
         }
-        courseCounter += courseCode.size();
-        System.out.println("Number of courses offered in this department: " + courseCode.size());
-        System.out.println(
-                "----------------------------------------------------------------------------------------------");
+//        courseCounter += courseCode.size();
+//        System.out.println("Number of courses offered in this department: " + courseCode.size());
+//        System.out.println(
+//                "----------------------------------------------------------------------------------------------");
     }
 
     public void connectToSubjectSection() {
