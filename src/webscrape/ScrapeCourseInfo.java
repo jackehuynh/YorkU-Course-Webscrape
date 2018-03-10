@@ -118,7 +118,7 @@ public class ScrapeCourseInfo {
         submitCourse = driver.findElement(By.name("3.10.7.5")); // finds CSS selector element for 'Choose course' button
 
         // For-loop that clicks through all the course options in the list
-        for (int i = 0; i < option.size(); i++) {
+        for (int i = 1; i < option.size(); i++) {
             select2 = driver.findElement(By.name("subjectPopUp"));
             List<WebElement> options = select2.findElements(By.tagName("option"));
 
@@ -170,6 +170,7 @@ public class ScrapeCourseInfo {
         String[] courseInfo = new String[courseCode.size()];
 
         if (courseCode.isEmpty()) {
+            System.out.println("----------NO COURSES FOUND----------");
             // printWriter.println("----------NO COURSES FOUND----------");
         } else {
             for (int i = keepTrack2; i < courseCode.size(); i++) {
@@ -199,24 +200,25 @@ public class ScrapeCourseInfo {
 
                 int b = 1;
                 for (int x = 0; x < getTermAndSection.size(); x++) {
+                    System.out.println("Availability: " + getTermAndSection.get(x).getText()); // prints term & section
                     List<WebElement> getCourseInfo = driver.findElements(By.cssSelector("table[border='2']"));
                     List<WebElement> tableForCourse = getCourseInfo.get(x).findElements(By.cssSelector("table[border='0']"));
-                    System.out.println("Availability: " + getTermAndSection.get(x).getText()); // prints term & section
                     if (x == 0) {
                         /*
                         It's finding the "a href" tag b/c if a course is available there'll be a href tag,
                         if a section is cancelled, there's usually no href tags.
                          */
-                        if (!getSectionDirector.get(1).findElements(By.tagName("a")).isEmpty() && !tableForCourse.get(1).findElements(By.cssSelector("td[width='15%']")).isEmpty()) {
+                        if (getSectionDirector.get(1).findElements(By.cssSelector("a[href^='/Apps/']")).isEmpty()) {
+
+                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
+
+                        } else if (!getSectionDirector.get(1).findElements(By.tagName("a")).isEmpty() && !tableForCourse.get(1).findElements(By.cssSelector("td[width='15%']")).isEmpty()) {
 
                             String director = getSectionDirector.get(1).findElement(By.tagName("a")).getText();
                             System.out.println("Section Director: " + director);
 
                             List<WebElement> classType = getCourseInfo.get(x).findElements(By.cssSelector("td[width='10%']"));
-//                            List<WebElement> classTime = getCourseInfo.get(x).findElements(By.cssSelector("td[width='35%']"));
-//                            List<WebElement> classDays = getCourseInfo.get(x).findElements(By.cssSelector("td[width='15%']"));
-//                            List<WebElement> classTimes = getCourseInfo.get(x).findElements(By.cssSelector("td[width='20%']"));
-//                            List<WebElement> classLocation = getCourseInfo.get(x).findElements(By.cssSelector("td[width='45%']"));
+//                         
 
                             int z = 0;
                             for (int k = 1; k < classType.size(); k++) {
@@ -224,61 +226,67 @@ public class ScrapeCourseInfo {
 
                                 List<WebElement> days = tableForCourse.get(k).findElements(By.cssSelector("td[width='15%']")); // Day category
                                 List<WebElement> times = tableForCourse.get(k).findElements(By.cssSelector("td[width='20%']")); // Start Time Category
-                                WebElement classLocation = tableForCourse.get(k).findElement(By.cssSelector("td[width='45%']")); // location of class
+                                WebElement classLocation = tableForCourse.get(k).findElement(By.cssSelector("td[width='45%']"));
                                 List<WebElement> instructor = getCourseInfo.get(x).findElements(By.tagName("a"));
-                                System.out.println("size of instructor.size() " + instructor.size());
+                                List<WebElement> catCode = getCourseInfo.get(x).findElements(By.tagName("tr"));
+                                List<WebElement> catCode2 = catCode.get(k).findElements(By.cssSelector("td[width='20%']"));
 
                                 System.out.print("Days: " + days.get(0).getText());
                                 System.out.print(" Times: " + times.get(0).getText());
                                 System.out.print(" Duration: " + times.get(1).getText());
-                                System.out.print(" Location: " + classLocation.getText());
+                                System.out.println(" Location: " + classLocation.getText());
+                                System.out.print("Cat # : " + catCode.get(6).getText());
                                 System.out.println(" Instructor: " + instructor.get(z).getText());
                                 z++;
                             }
                             System.out.println("------------------------------");
-                        } else {
-                            if (!getSectionDirector.get(b).findElements(By.tagName("a")).isEmpty() && !tableForCourse.get(1).findElements(By.cssSelector("td[width='15%']")).isEmpty()) {
-
-                                String director = getSectionDirector.get(b).findElement(By.tagName("a")).getText();
-                                System.out.println("Section Director: " + director);
-
-                                List<WebElement> classType = getCourseInfo.get(x).findElements(By.cssSelector("td[width='10%']"));
-//                                List<WebElement> classTime = getCourseInfo.get(x).findElements(By.cssSelector("td[width='35%']"));
-//                                List<WebElement> classDays = getCourseInfo.get(x).findElements(By.cssSelector("td[width='15%']"));
-//                                List<WebElement> classTimes = getCourseInfo.get(x).findElements(By.cssSelector("td[width='20%']"));
-//                                List<WebElement> classLocation = getCourseInfo.get(x).findElements(By.cssSelector("td[width='45%']"));
-
-                                int z = 0;
-                                for (int k = 1; k < classType.size(); k++) {
-                                    System.out.println("Course Type: " + classType.get(k).getText());
-
-                                    List<WebElement> days = tableForCourse.get(k).findElements(By.cssSelector("td[width='15%']")); // Day category
-                                    List<WebElement> times = tableForCourse.get(k).findElements(By.cssSelector("td[width='20%']")); // Start Time Category
-                                    WebElement classLocation = tableForCourse.get(k).findElement(By.cssSelector("td[width='45%']")); // location of class
-                                    List<WebElement> instructor = getCourseInfo.get(x).findElements(By.tagName("a"));
-                                    System.out.println("size of instructor.size() " + instructor.size());
-
-                                    System.out.print("Days: " + days.get(0).getText());
-                                    System.out.print(" Times: " + times.get(0).getText());
-                                    System.out.print(" Duration: " + times.get(1).getText());
-                                    System.out.print(" Location: " + classLocation.getText());
-                                    System.out.println(" Instructor: " + instructor.get(z).getText());
-                                    z++;
-                                }
-                                System.out.println("------------------------------");
-                            }
-                            b += 2;
                         }
-                        keepTrack2 = i;
-                        keepTrack2++;
-                        driver.navigate().back();
-                        driver.navigate().refresh();
-                        if (driver.findElements(By.cssSelector("td[width='16%']")).isEmpty()) {
-                            System.out.println("Page timed out"); // message to let me know if page has timed out
-                            this.tempFix();
-                            break;
+                    } else {
+                        if (getSectionDirector.get(b).findElements(By.cssSelector("a[href^='/Apps/']")).isEmpty()) {
+
+                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
+
+                        } else if (!getSectionDirector.get(b).findElements(By.tagName("a")).isEmpty() && !tableForCourse.get(1).findElements(By.cssSelector("td[width='15%']")).isEmpty()) {
+
+                            String director = getSectionDirector.get(b).findElement(By.tagName("a")).getText();
+                            System.out.println("Section Director: " + director);
+
+                            List<WebElement> classType = getCourseInfo.get(x).findElements(By.cssSelector("td[width='10%']"));
+
+                            int z = 0;
+                            for (int k = 1; k < classType.size(); k++) {
+                                System.out.println("Course Type: " + classType.get(k).getText());
+
+                                List<WebElement> days = tableForCourse.get(k).findElements(By.cssSelector("td[width='15%']")); // Day category
+                                List<WebElement> times = tableForCourse.get(k).findElements(By.cssSelector("td[width='20%']")); // Start Time Category
+                                WebElement classLocation = tableForCourse.get(k).findElement(By.cssSelector("td[width='45%']"));
+                                List<WebElement> catCode = getCourseInfo.get(k).findElements(By.cssSelector("td[width='20%']"));
+                                List<WebElement> instructor = getCourseInfo.get(x).findElements(By.tagName("a"));
+
+                                System.out.println("tr tag size: " + catCode.size());
+
+                                System.out.print("Days: " + days.get(0).getText());
+                                System.out.print(" Times: " + times.get(0).getText());
+                                System.out.print(" Duration: " + times.get(1).getText());
+                                System.out.println(" Location: " + classLocation.getText());
+                                System.out.print("Cat # : " + catCode.get(6).getText());
+                                System.out.println(" Instructor: " + instructor.get(z).getText());
+                                z++;
+                            }
+                            System.out.println("------------------------------");
                         }
                     }
+                    b += 2;
+                }
+
+                keepTrack2 = i;
+                keepTrack2++;
+                driver.navigate().back();
+                driver.navigate().refresh();
+                if (driver.findElements(By.cssSelector("td[width='16%']")).isEmpty()) {
+                    System.out.println("Page timed out"); // message to let me know if page has timed out
+                    this.tempFix();
+                    break;
                 }
             }
         }
@@ -294,7 +302,7 @@ public class ScrapeCourseInfo {
             System.out.println("----------NO COURSES FOUND----------");
             // printWriter.println("----------NO COURSES FOUND----------");
         } else {
-            for (int i = 0; i < courseCode.size(); i++) {
+            for (int i = 1; i < courseCode.size(); i++) {
                 courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
                 courseTitle = driver.findElements(By.cssSelector("td[width='24%']"));
 
@@ -329,7 +337,11 @@ public class ScrapeCourseInfo {
                         It's finding the "a href" tag b/c if a course is available there'll be a href tag,
                         if a section is cancelled, there's usually no href tags.
                          */
-                        if (!getSectionDirector.get(1).findElements(By.tagName("a")).isEmpty() && !tableForCourse.get(1).findElements(By.cssSelector("td[width='15%']")).isEmpty()) {
+                        if (getSectionDirector.get(1).findElements(By.cssSelector("a[href^='/Apps/']")).isEmpty()) {
+
+                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
+
+                        } else if (!getSectionDirector.get(1).findElements(By.tagName("a")).isEmpty() && !tableForCourse.get(1).findElements(By.cssSelector("td[width='15%']")).isEmpty()) {
 
                             String director = getSectionDirector.get(1).findElement(By.tagName("a")).getText();
                             System.out.println("Section Director: " + director);
@@ -348,30 +360,29 @@ public class ScrapeCourseInfo {
                                 List<WebElement> times = tableForCourse.get(k).findElements(By.cssSelector("td[width='20%']")); // Start Time Category
                                 WebElement classLocation = tableForCourse.get(k).findElement(By.cssSelector("td[width='45%']"));
                                 List<WebElement> instructor = getCourseInfo.get(x).findElements(By.tagName("a"));
-                                System.out.println("size of instructor.size() " + instructor.size());
+                                List<WebElement> catCode = getCourseInfo.get(x).findElements(By.cssSelector("td[width='20%']"));
 
                                 System.out.print("Days: " + days.get(0).getText());
                                 System.out.print(" Times: " + times.get(0).getText());
                                 System.out.print(" Duration: " + times.get(1).getText());
-                                System.out.print(" Location: " + classLocation.getText());
+                                System.out.println(" Location: " + classLocation.getText());
+                                System.out.print("Cat #: " + catCode.get(6).getText());
                                 System.out.println(" Instructor: " + instructor.get(z).getText());
                                 z++;
                             }
                             System.out.println("------------------------------");
-                        } else {
-                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
                         }
                     } else {
-                        if (!getSectionDirector.get(b).findElements(By.tagName("a")).isEmpty() && !tableForCourse.get(1).findElements(By.cssSelector("td[width='15%']")).isEmpty()) {
+                        if (getSectionDirector.get(b).findElements(By.cssSelector("a[href^='/Apps/']")).isEmpty()) {
+//getSectionDirector.get(b).findElements(By.tagName("a")).isEmpty()
+                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
+
+                        } else {
 
                             String director = getSectionDirector.get(b).findElement(By.tagName("a")).getText();
                             System.out.println("Section Director: " + director);
 
                             List<WebElement> classType = getCourseInfo.get(x).findElements(By.cssSelector("td[width='10%']"));
-//                            List<WebElement> classTime = getCourseInfo.get(x).findElements(By.cssSelector("td[width='35%']"));
-//                            List<WebElement> classDays = getCourseInfo.get(x).findElements(By.cssSelector("td[width='15%']"));
-//                            List<WebElement> classTimes = getCourseInfo.get(x).findElements(By.cssSelector("td[width='20%']"));
-//                            List<WebElement> classLocation = getCourseInfo.get(x).findElements(By.cssSelector("td[width='45%']"));
 
                             int z = 0;
                             for (int k = 1; k < classType.size(); k++) {
@@ -381,18 +392,20 @@ public class ScrapeCourseInfo {
                                 List<WebElement> times = tableForCourse.get(k).findElements(By.cssSelector("td[width='20%']")); // Start Time Category
                                 WebElement classLocation = tableForCourse.get(k).findElement(By.cssSelector("td[width='45%']"));
                                 List<WebElement> instructor = getCourseInfo.get(x).findElements(By.tagName("a"));
-                                System.out.println("size of instructor.size() " + instructor.size());
+                                List<WebElement> catCode = getCourseInfo.get(x).findElements(By.cssSelector("td[width='20%']"));
+//                                List<WebElement> catCode = getCourseInfo.get(x).findElements(By.tagName("tr"));
+//                                WebElement catCode2 = catCode.get(3).findElement(By.cssSelector("td[width='20%']"));
 
+                                System.out.println("catCode size: " + catCode.size());
                                 System.out.print("Days: " + days.get(0).getText());
                                 System.out.print(" Times: " + times.get(0).getText());
                                 System.out.print(" Duration: " + times.get(1).getText());
-                                System.out.print(" Location: " + classLocation.getText());
+                                System.out.println(" Location: " + classLocation.getText());
+                                System.out.print("Cat #: " + catCode.get(6).getText());
                                 System.out.println(" Instructor: " + instructor.get(z).getText());
                                 z++;
                             }
                             System.out.println("------------------------------");
-                        } else {
-                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
                         }
                     }
                     b += 2;
