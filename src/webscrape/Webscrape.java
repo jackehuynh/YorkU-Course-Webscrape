@@ -34,7 +34,8 @@ public class Webscrape {
                 ChromeDriver driver = new ChromeDriver(chromeOptions);
                 driver.manage().timeouts().implicitlyWait(1500, TimeUnit.MILLISECONDS);
 
-                HeadlessScrape courseInfoScraper = new HeadlessScrape(driver);
+                ScrapeCourse courseInfoScraper = new ScrapeCourse();
+                courseInfoScraper.setDriver(driver);
 
                 if (response2 == 1) {
                     courseInfoScraper.setSession("Fall/Winter 2017-2018");
@@ -43,7 +44,7 @@ public class Webscrape {
                     courseInfoScraper.setSession("Summer 2018");
                     courseInfoScraper.setFileLocation("src/summer2018.txt");
                 }
-                courseInfoScraper.startConnection();
+                courseInfoScraper.connectionOne();
 
             } else if (response == 2) {
 
@@ -51,7 +52,9 @@ public class Webscrape {
                 ChromeDriver driver = new ChromeDriver();   // GUI (Chrome) browser
                 driver.manage().timeouts().implicitlyWait(1500, TimeUnit.MILLISECONDS);
 
-                ScrapeCourseInfo courseInfoScraper = new ScrapeCourseInfo(driver);
+                ScrapeCourse courseInfoScraper = new ScrapeCourse();
+                
+                courseInfoScraper.setDriver(driver);
 
                 if (response2 == 1) {
                     courseInfoScraper.setSession("Fall/Winter 2017-2018");
@@ -60,7 +63,7 @@ public class Webscrape {
                     courseInfoScraper.setSession("Summer 2018");
                     courseInfoScraper.setFileLocation("src/summer2018-Test.txt");
                 }
-                courseInfoScraper.startConnection();
+                  courseInfoScraper.connectionOne();
 
             }
 
