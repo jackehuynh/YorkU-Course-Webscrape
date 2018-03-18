@@ -10,7 +10,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 import java.io.PrintWriter;
 import java.awt.AWTException;
-import java.io.File;
 import java.io.FileWriter;
 import org.openqa.selenium.chrome.ChromeDriver;
 
@@ -50,8 +49,8 @@ public class ScrapeCourse extends ScrapeCourseInfo {
             select2 = driver.findElement(By.name("subjectPopUp"));
             List<WebElement> options = select2.findElements(By.tagName("option"));
 
-            System.out.println(i + 1 + ")" + " --> " + options.get(i).getText());
-            printWriter.println(options.get(i).getText());
+            System.out.println("{" + options.get(i).getText() + "}" + "\n");
+            printWriter.println("{" + options.get(i).getText() + "}" + "\n");
 
             for (int k = i; k < i + 1; k++) {
                 String j = Integer.toString(k);
@@ -65,7 +64,7 @@ public class ScrapeCourse extends ScrapeCourseInfo {
                 submitCourse = driver.findElement(By.name("3.10.7.5"));
                 submitCourse.click();
 
-                System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+//                System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 //                printWriter.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 this.scrapeCourses();
             }
@@ -73,18 +72,17 @@ public class ScrapeCourse extends ScrapeCourseInfo {
         }
     }
 
-    public void scrapeCourses() throws IOException {
-        List<WebElement> courseCode = getCourseCodeElement();
+    public void scrapeCourses() throws IOException, AWTException {
 
-        if (courseCode.isEmpty()) {
+        if (getCourseCodeElement().isEmpty()) {
             System.out.println("----------NO COURSES FOUND----------");
         } else {
-            for (int i = 0; i < courseCode.size(); i++) {
+            for (int i = 0; i < getCourseCodeElement().size(); i++) {
 
-                String[] result = new String[courseCode.size()];
+                String[] result = new String[getCourseCodeElement().size()];
                 result[i] = printCourseCode(i) + " - " + printCourseTitle(i);
-                System.out.println(result[i]);
-                printWriter.println(result[i]);
+                System.out.println("*" + result[i] + "*" + "\n");
+                printWriter.println("*" + result[i] + "*" + "\n");
 
                 if (i == 0) {
                     clickOnCourseScheduleLink(i);
@@ -92,69 +90,62 @@ public class ScrapeCourse extends ScrapeCourseInfo {
                     clickOnCourseScheduleLink(i + i);
                 }
 
-                System.out.println("[" + getCourseDescription() + "]");
-                int b = 1; // counter used for searching section director HTML element
-                for (int x = 0; x < getTermAndSectionElement().size(); x++) {
-                    setCourseColumnCounter(x);
-                    System.out.println("Availability: " + printTermAndSection(x)); // prints term & section
-                    if (x == 0) {
-                        /*
-                        It's finding the "a href" tag b/c if a course is available there'll be a href tag,
-                        if a section is cancelled, there's usually no href tags.
-                         */
-                        if (getSectionDirectorElement(1).isEmpty()) {
-                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
-                        } else {
-                            System.out.println("Section Director: " + printSectionDirector(1));
-
-                            int z = 0;
-                            for (int k = 1; k < getClassTypeSize(x); k++) {
-                                
-                                setCourseColumnCounter2(k);
-                                
-                                List<WebElement> catCode = getCourseTable().get(x).findElements(By.cssSelector("td[width='20%']"));
-                                
-                                System.out.println("Course Type: " + printClassType(k, x));
-                                System.out.print("Days: " + getClassDays().get(0).getText());
-                                System.out.print(" Times: " + getClassTimes().get(0).getText());
-                                System.out.print(" Duration: " + getClassTimes().get(1).getText());
-                                System.out.println(" Location: " + getClassLocation().getText());
-                                System.out.print("Cat #: " + catCode.get(6).getText());
-                                System.out.println(" Instructor: " + getCourseInstructorElement(x).get(z).getText());
-                                z++;
-                            }
-                            System.out.println("------------------------------");
-                        }
-                    } else {
-
-                        if (getSectionDirectorElement(b).isEmpty()) {
-                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
-                        } else {
-                            System.out.println("Section Director: " + printSectionDirector(b));
-
-//                            List<WebElement> classType = getCourseTable().get(x).findElements(By.cssSelector("td[width='10%']"));
-                            int z = 0;
-                            for (int k = 1; k < getClassTypeSize(x); k++) {
-                                
-                                setCourseColumnCounter2(k);
-
-                                List<WebElement> catCode = getCourseTable().get(x).findElements(By.cssSelector("td[width='20%']"));
-                                
-                                System.out.println("Course Type: " + printClassType(k, x));
-                                System.out.print("Days: " + getClassDays().get(0).getText());
-                                System.out.print(" Times: " + getClassTimes().get(0).getText());
-                                System.out.print(" Duration: " + getClassTimes().get(1).getText());
-                                System.out.println(" Location: " + getClassLocation().getText());
-                                System.out.print("Cat #: " + catCode.get(6).getText());
-                                System.out.println(" Instructor: " + getCourseInstructorElement(x).get(z).getText());
-                                
-                                z++;
-                            }
-                            System.out.println("------------------------------");
-                        }
-                    }
-                    b += 2;
-                }
+                System.out.println("[" + getCourseDescription() + "]" + "\n");
+                printWriter.println("[" + getCourseDescription() + "]" + "\n");
+//                int b = 1; // counter used for searching section director HTML element
+//                for (int x = 0; x < getTermAndSectionElement().size(); x++) {
+//                    setCourseColumnCounter(x);
+////                    System.out.print("{" + printTermAndSection(x)); // prints term & section
+//                    printWriter.print("{" + printTermAndSection(x));
+//                    if (x == 0) {
+//                        /*
+//                        It's finding the "a href" tag b/c if a course is available there'll be a href tag,
+//                        if a section is cancelled, there's usually no href tags.
+//                         */
+//                        if (getSectionDirectorElement(1).isEmpty()) {
+////                            System.out.println("    Section Cancelled OR This is an Online Course. Please check York's Website for more information.}");
+//                              printWriter.println("  Section Cancelled OR This is an Online Course. Please check York's Website for more information.}");
+//                        } else {
+////                            System.out.println("    Section Director: " + printSectionDirector(1));
+//                            printWriter.println("  Section Director: " + printSectionDirector(1) + "}");
+//
+//                            int z = 0;
+//                            for (int k = 1; k < getClassTypeSize(x); k++) {
+//
+//                                setCourseColumnCounter2(k);
+//
+////                                List<WebElement> catCode = getCourseTable().get(x).findElements(By.cssSelector("td[width='20%']"));
+//
+////                                System.out.println("(Time & Location: " + printClassType(k, x) + " " + printTimesAndLocation() + ")");
+//                                printWriter.println("(Time & Location: " + printClassType(k, x) + " " + printTimesAndLocation() + ")");
+//                                z++;
+//                            }
+//                        }
+//                    } else {
+//
+//                        if (getSectionDirectorElement(b).isEmpty()) {
+//                            printWriter.println("  Section Cancelled OR This is an Online Course. Please check York's Website for more information.}");
+////                            System.out.println("    Section Cancelled OR This is an Online Course. Please check York's Website for more information.}");
+//                        } else {
+////                            System.out.println("    Section Director: " + printSectionDirector(b) + "}");
+//                            printWriter.println("  Section Director: " + printSectionDirector(b) + "}");
+//
+////                            List<WebElement> classType = getCourseTable().get(x).findElements(By.cssSelector("td[width='10%']"));
+//                            int z = 0;
+//                            for (int k = 1; k < getClassTypeSize(x); k++) {
+//
+//                                setCourseColumnCounter2(k);
+//
+////                                List<WebElement> catCode = getCourseTable().get(x).findElements(By.cssSelector("td[width='20%']"));
+//
+////                                System.out.println("(Time & Location: " + printClassType(k, x) + " " + printTimesAndLocation() + ")");
+//                                printWriter.println("(Time & Location: " + printClassType(k, x) + " " + printTimesAndLocation() + ")");
+//                                z += 2;
+//                            }
+//                        }
+//                    }
+//                    b += 2;
+//                }
                 keepTrack2 = i;
                 keepTrack2++;
                 driver.navigate().back();
@@ -168,7 +159,7 @@ public class ScrapeCourse extends ScrapeCourseInfo {
         }
     }
 
-    public void pageTimeOutFix() throws IOException {
+    public void pageTimeOutFix() throws IOException, AWTException {
 
         this.returnToSubject();
         select2 = driver.findElement(By.name("subjectPopUp"));
@@ -187,8 +178,8 @@ public class ScrapeCourse extends ScrapeCourseInfo {
 
                 String[] result = new String[courseCode.size()];
                 result[i] = printCourseCode(i) + " - " + printCourseTitle(i);
-                System.out.println(result[i]);
-                printWriter.println(result[i]);
+                System.out.println("*" + result[i] + "*" + "\n");
+                printWriter.println("*" + result[i] + "*" + "\n");
 
                 if (i == 0) {
                     clickOnCourseScheduleLink(i);
@@ -196,62 +187,56 @@ public class ScrapeCourse extends ScrapeCourseInfo {
                     clickOnCourseScheduleLink(i + i);
                 }
 
-                System.out.println("[" + getCourseDescription() + "]");
-                int b = 1; // counter used for searching section director HTML element
-                for (int x = 0; x < getTermAndSectionElement().size(); x++) {
-                    setCourseColumnCounter(x);
-                    System.out.println("Availability: " + printTermAndSection(x)); // prints term & section
-                    if (x == 0) {
-                        if (getSectionDirectorElement(1).isEmpty()) {
-                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
-                        } else {
-                            System.out.println("Section Director: " + printSectionDirector(1));
-
-                            int z = 0;
-                            for (int k = 1; k < getClassTypeSize(x); k++) {
-
-                                setCourseColumnCounter2(k);
-
-                                List<WebElement> catCode = getCourseTable().get(x).findElements(By.cssSelector("td[width='20%']"));
-
-                                System.out.println("Course Type: " + printClassType(k, x));
-                                System.out.print("Days: " + getClassDays().get(0).getText());
-                                System.out.print(" Times: " + getClassTimes().get(0).getText());
-                                System.out.print(" Duration: " + getClassTimes().get(1).getText());
-                                System.out.println(" Location: " + getClassLocation().getText());
-                                System.out.print("Cat #: " + catCode.get(6).getText());
-                                System.out.println(" Instructor: " + getCourseInstructorElement(x).get(z).getText());
-                                z++;
-                            }
-                            System.out.println("------------------------------");
-                        }
-                    } else {
-
-                        if (getSectionDirectorElement(b).isEmpty()) {
-                            System.out.println("Section Cancelled OR This is an Online Course. Please check York's Website for more information");
-                        } else {
-                            System.out.println("Section Director: " + printSectionDirector(b));
-
-//                            List<WebElement> classType = getCourseTable().get(x).findElements(By.cssSelector("td[width='10%']"));
-                            int z = 0;
-                            for (int k = 1; k < getClassTypeSize(x); k++) {
-                                setCourseColumnCounter2(k);
-                                System.out.println("Course Type: " + printClassType(k, x));
-                                List<WebElement> catCode = getCourseTable().get(x).findElements(By.cssSelector("td[width='20%']"));
-
-                                System.out.print("Days: " + getClassDays().get(0).getText());
-                                System.out.print(" Times: " + getClassTimes().get(0).getText());
-                                System.out.print(" Duration: " + getClassTimes().get(1).getText());
-                                System.out.println(" Location: " + getClassLocation().getText());
-                                System.out.print("Cat #: " + catCode.get(6).getText());
-                                System.out.println(" Instructor: " + getCourseInstructorElement(x).get(z).getText());
-                                z++;
-                            }
-                            System.out.println("------------------------------");
-                        }
-                    }
-                    b += 2;
-                }
+                System.out.println("[" + getCourseDescription() + "]" + "\n");
+                printWriter.println("[" + getCourseDescription() + "]" + "\n");
+//                int b = 1; // counter used for searching section director HTML element
+//                for (int x = 0; x < getTermAndSectionElement().size(); x++) {
+//                    setCourseColumnCounter(x);
+////                    System.out.print("{" + printTermAndSection(x)); // prints term & section
+//                    printWriter.print("{" + printTermAndSection(x));
+//                    if (x == 0) {
+//                        if (getSectionDirectorElement(1).isEmpty()) {
+//                            printWriter.println("  Section Cancelled OR This is an Online Course. Please check York's Website for more information.}");
+////                            System.out.println("    Section Cancelled OR This is an Online Course. Please check York's Website for more information.}");
+//                        } else {
+//                            printWriter.println("  Section Director: " + printSectionDirector(1) + "}");
+////                            System.out.println("    Section Director: " + printSectionDirector(1) + "}");
+//
+//                            int z = 0;
+//                            for (int k = 1; k < getClassTypeSize(x); k++) {
+//
+//                                setCourseColumnCounter2(k);
+//
+//                                List<WebElement> catCode = getCourseTable().get(x).findElements(By.cssSelector("td[width='20%']"));
+//
+////                                System.out.println("(Time & Location: " + printClassType(k, x) + " " + printTimesAndLocation() + ")");
+//                                printWriter.println("(Time & Location: " + printClassType(k, x) + " " + printTimesAndLocation() + ")");
+//                                z++;
+//                            }
+//                        }
+//                    } else {
+//
+//                        if (getSectionDirectorElement(b).isEmpty()) {
+//                            printWriter.println("  Section Cancelled OR This is an Online Course. Please check York's Website for more information.}");
+////                            System.out.println("    Section Cancelled OR This is an Online Course. Please check York's Website for more information.}");
+//                        } else {
+//                            printWriter.println("  Section Director: " + printSectionDirector(b) + "}");
+////                            System.out.println("    Section Director: " + printSectionDirector(b) + "}");
+//
+////                            List<WebElement> classType = getCourseTable().get(x).findElements(By.cssSelector("td[width='10%']"));
+//                            int z = 0;
+//                            for (int k = 1; k < getClassTypeSize(x); k++) {
+//                                setCourseColumnCounter2(k);
+////                                List<WebElement> catCode = getCourseTable().get(x).findElements(By.cssSelector("td[width='20%']"));
+//
+////                                System.out.println("(Time & Location: " + printClassType(k, x) + " " + printTimesAndLocation() + ")");
+//                                printWriter.println("(Time & Location: " + printClassType(k, x) + " " + printTimesAndLocation() + ")");
+//                                z++;
+//                            }
+//                        }
+//                    }
+//                    b += 2;
+//                }
                 keepTrack2 = i;
                 keepTrack2++;
                 driver.navigate().back();
