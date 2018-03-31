@@ -1,54 +1,35 @@
 <?php
+// inserts course, subject, title, and description into DB
 
 $file = file_get_contents("2018-03-17-Summer2018.txt");
 
 $text = explode("\n", $file);
-$course = array();
 
-//$subjectPattern = '/\{([^\]]*)\}/';
-//$titlePattern = '/\*([^\]].*)\*/';
-//$descPattern = '/\[([^\]]*)\]/';
-//
-//preg_match_all($subjectPattern, $file, $match); // match subject
-//$course['subject'] = $match;
-//print_r($course['subject'][1]);
-//
-//preg_match_all($titlePattern, $file, $match); // match course title
-//$course['title'] = $match;
-//print_r($course['title'][1]);
-//
-//preg_match_all($descPattern, $file, $match); // match course description
-//$course['description'] = $match;
-//print_r($course['description'][1]);
-//
-//preg_match_all($coursePattern, $file, $match);
-//$course['code'] = $match;
-//print_r($course['code'][1]);
-//for ($i = 0; $i < count($course['subject'][0]); $i++) {
-//    print_r($course['subject'][0][$i]);
-//    for ($j = 0; $j < count($course['title']))
-//}
-
-
-//$subject = '';
-//$title = '';
-//$code = '';
-//$description = '';
+$conn = mysqli_connect('localhost', 'root', '', 'courses');
 
 for ($i = 0; $i < count($text); $i++) {
     if (strpos($text[$i], '{') !== false) { // subject
-        $subject = str_replace("{", "", $text[$i]);
-        $subject = str_replace("}", "", $subject);
-//        echo $subject;
+        $subject = trim($text[$i], "{}");
+        $subject = mysqli_real_escape_string($conn, $subject);
     } else if (strpos($text[$i], '*') !== false) {  // course title
-        $title = str_replace("*", "", $text[$i]);
-        $title = str_replace("*", "", $title);
-        $code = str_replace("-", "", $title);
-//        echo $subject . ": " . $title;
+        $title = trim($text[$i], "*");
+        $courseCode = substr($title, 0, strpos($title, "-"));
+        $title = strstr($title, '-');
+        $title = trim($title, "- ");
+        
+        $title = mysqli_real_escape_string($conn, $title);
+        $courseCode = mysqli_real_escape_string($conn, $courseCode);
+        $result = "INSERT into courses (Subject, Title, Course) VALUES ('$subject','$title','$courseCode')";
+        $sql = mysqli_query($conn, $result);
+        $last_id = $conn->insert_id;
     } else if (strpos($text[$i], '[') !== false) {  // course description
-        $description = str_replace("[", "", $text[$i]);
-        $description = str_replace("]", "", $description);
-        echo $subject . " > " . $title . " : " . $description;
+        $description = trim($text[$i], "[]");
+        
+        echo $subject . " > " . $courseCode . " - " . $title . " : " . $description;
+        
+        $description = mysqli_real_escape_string($conn, $description);
+        $result = "INSERT into info (description, ID) VALUES ('$description', $last_id)";
+        $sql = mysqli_query($conn, $result);
     }
     echo "<br>";
 }
