@@ -2,9 +2,6 @@ package webscrape;
 
 import java.awt.AWTException;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,10 +18,7 @@ public class Webscrape {
         logger.setLevel(Level.OFF);
         Scanner reader = new Scanner(System.in);
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        System.out.println("src/" + dateFormat.format(date) + "-Summer2018.txt"); //2016/11/16 12:08:43
-
+        WebDriver chrome;
         System.out.println("GUI is mainly for debug/testing. Headless is for performance and final product.");
         System.out.println("Type 1 for Headless browser, 2 for GUI (Chrome): ");
         int response = reader.nextInt();
@@ -38,17 +32,17 @@ public class Webscrape {
                 ChromeOptions chromeOptions = new ChromeOptions();
                 chromeOptions.addArguments("--headless");
                 ChromeDriver driver = new ChromeDriver(chromeOptions);
-                driver.manage().timeouts().implicitlyWait(500, TimeUnit.MILLISECONDS);
+                driver.manage().timeouts().implicitlyWait(1500, TimeUnit.MILLISECONDS);
 
                 ScrapeCourse courseInfoScraper = new ScrapeCourse();
                 courseInfoScraper.setDriver(driver);
 
                 if (response2 == 1) {
-                    courseInfoScraper.setSession("Fall/Winter 2017-2018");
-                    courseInfoScraper.setFileLocation("src/" + dateFormat.format(date) + ".txt");
+                    courseInfoScraper.setSession("Fall/Winter 2018-2019");
+                    courseInfoScraper.setFileLocation("src/fallwinter20172018.txt");
                 } else if (response2 == 2) {
                     courseInfoScraper.setSession("Summer 2018");
-                    courseInfoScraper.setFileLocation("src/" + dateFormat.format(date) + "-Summer2018.txt");
+                    courseInfoScraper.setFileLocation("src/summer2018.txt");
                 }
                 courseInfoScraper.connectionOne();
 
@@ -74,20 +68,22 @@ public class Webscrape {
             } else if (response == 3) {
 
                 System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
-                ChromeDriver driver = new ChromeDriver();   // GUI (Chrome) browser
-                driver.manage().timeouts().implicitlyWait(1500, TimeUnit.MILLISECONDS);
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.addArguments("--headless");
+//                ChromeDriver driver = new ChromeDriver();   // GUI (Chrome) browser
+                ChromeDriver driver = new ChromeDriver(chromeOptions); // headless
+//                driver.manage().timeouts().implicitlyWait(1500, TimeUnit.MILLISECONDS);
 
-                ACTScrape courseInfoScraper = new ACTScrape();
-                courseInfoScraper.setDriver(driver);
-                courseInfoScraper.connect();
+                ACTScraper ACTScraper = new ACTScraper();
+                ACTScraper.connectionStart();
 
-                if (response2 == 1) {
+//                if (response2 == 1) {
 //                    courseInfoScraper.setSession("Fall/Winter 2017-2018");
-                    courseInfoScraper.setFileLocation("src/ACT-Test1.txt");
-                } else if (response2 == 2) {
+//                    ACTScrape.setFileLocation("src/ACT1.txt");
+//                } else if (response2 == 2) {
 //                    courseInfoScraper.setSession("Summer 2018");
-                    courseInfoScraper.setFileLocation("src/ACT-Test2.txt");
-                }
+//                    ACTScrape.setFileLocation("src/ACT2.txt");
+//                }
             }
 
             System.out.println("Scrape finished!");

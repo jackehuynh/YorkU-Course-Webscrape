@@ -9,18 +9,15 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 import java.io.PrintWriter;
-import java.awt.AWTException;
 import java.io.File;
-import java.io.FileWriter;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-// Scrape courses AND course description via GUI browser (testing purposes only)
 public class ScrapeCourseInfo {
 
     protected String absHref, session;
     protected WebElement select, select2, submitCourse;
     protected ChromeDriver driver;
-    protected Select courseSelect, sessionSelect;
+    protected Select sessionSelect;
     protected File fileLocation;
     protected PrintWriter printWriter;
     protected int keepTrack, keepTrack2, courseCounter, classTypeSize;
@@ -31,13 +28,8 @@ public class ScrapeCourseInfo {
         this.driver = driver;
     }
 
-    public void setFileLocation(String location) throws IOException {
+    public void setFileLocation(String location) {
         fileLocation = new File(location);
-        printWriter = new PrintWriter(new FileWriter(fileLocation));
-    }
-
-    public String getHref() {
-        return this.absHref;
     }
 
     public void setSession(String session) {
@@ -131,19 +123,6 @@ public class ScrapeCourseInfo {
         return getTermAndSection;
     }
 
-//    public String getCatCode() {
-//        List<WebElement> sizeOfClassDays = courseColumnWithDaysAndTimes().get(courseColumnCounter2).findElements(By.cssSelector("td[valign='TOP']"));
-//        List<WebElement> catCode1 = getCourseTable().get(courseColumnCounter).findElements(By.tagName("tr"));
-//        List<WebElement> catCode2 = catCode1.get(courseColumnCounter2).findElements(By.cssSelector("td[valign='TOP']"));
-//        List<WebElement> courseTable = driver.findElements(By.cssSelector("table[width='100%']"));
-//        List<WebElement> test = courseTable.get(courseColumnCounter).findElements(By.cssSelector("td[valign='TOP']"));
-//        List<WebElement> trTags = getCourseTable().get(courseColumnCounter).findElements(By.tagName("tr"));
-//        List<WebElement> catCode = trTags.get(2).findElements(By.cssSelector("td[width='20%']"));
-//        List<WebElement> code = getCourseTable().get(courseColumnCounter).findElements(By.cssSelector("table[width='20%']"));
-//        
-//        return code.get(8).getText();
-//    }
-
     public String printTermAndSection(int index) {
         return getTermAndSectionElement().get(index).getText();
     }
@@ -153,29 +132,19 @@ public class ScrapeCourseInfo {
         return getCourseTable;
     }
 
-//    public String printCourseInstructor(int index) {
-//        List<WebElement> trTags = getCourseTable().get(courseColumnCounter).findElements(By.tagName("tr"));
-//        List<WebElement> courseInstructor = trTags.get(2).findElements(By.cssSelector("td[width='15%']"));
-//        List<WebElement> firstSize = trTags.get(2).findElements(By.tagName("tr"));
-//        width15Counter += firstSize.size();
-//        List<WebElement> instructor = trTags.get(width15Counter).findElements(By.cssSelector("td[width='15%']"));
-//        return instructor.get(instructor.size() - 1).getText();
-//        List<WebElement> instructor = getCourseTable().get(courseColumnCounter).findElements(By.tagName("a"));
-//        return instructor.get(index).getText();
-//          return "";
-//    }
+    public List<WebElement> getCourseInstructorElement(int index) {
+        List<WebElement> instructor = getCourseTable().get(index).findElements(By.tagName("a"));
+        return instructor;
+    }
+
+    public List<WebElement> courseColumnWithDaysAndTimes(int index) {
+        List<WebElement> courseColumn = getCourseTable().get(index).findElements(By.cssSelector("table[border='0']"));
+        return courseColumn;
+    }
 
     public List<WebElement> courseColumnWithDaysAndTimes() {
         List<WebElement> courseColumn = getCourseTable().get(courseColumnCounter).findElements(By.cssSelector("table[border='0']"));
         return courseColumn;
-    }
-
-    public String printTimesAndLocation() {
-        List<WebElement> courseColumns = getCourseTable().get(courseColumnCounter).findElements(By.cssSelector("td[width='35%']"));
-        if(courseColumns.get(courseColumnCounter2).getText().isEmpty()) {
-            return "N/A";
-        }
-        return courseColumns.get(courseColumnCounter2).getText();
     }
 
     public List<WebElement> getClassDays() {
@@ -183,15 +152,14 @@ public class ScrapeCourseInfo {
         return classDays;
     }
 
-    public String printClassDays() {
-        String classDays = "";
-        if (courseColumnWithDaysAndTimes().isEmpty()) {
-            classDays = "N/A";
-        } else {
-            List<WebElement> classDay = courseColumnWithDaysAndTimes().get(courseColumnCounter2).findElements(By.cssSelector("td[width='15%']"));
-            classDays = classDay.get(0).getText();
-        }
-        return classDays;
+    public List<WebElement> getClassTimes() {
+        List<WebElement> classTimes = courseColumnWithDaysAndTimes().get(courseColumnCounter2).findElements(By.cssSelector("td[width='20%']"));
+        return classTimes;
+    }
+
+    public WebElement getClassLocation() {
+        WebElement classLocation = courseColumnWithDaysAndTimes().get(courseColumnCounter2).findElement(By.cssSelector("td[width='45%']"));
+        return classLocation;
     }
 
     public String printClassType(int indexForClassType, int indexForCourseTable) {
@@ -203,21 +171,24 @@ public class ScrapeCourseInfo {
         List<WebElement> classType = getCourseTable().get(size).findElements(By.cssSelector("td[width='10%']"));
         return classType.size();
     }
+    
+    public String getHref() {
+        return this.absHref;
+    }
 
     public void returnToSubject() throws IOException {
         Document doc = Jsoup.connect("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm").userAgent("Mozilla").get();
-        Elements result = doc.select("ul.bodytext");
-        Elements result2 = result.select("a[href]");
-        absHref = result2.attr("abs:href");
+        Elements result = doc.select("ul.bodytext")
+                             .select("a[href]");
+        absHref = result.attr("abs:href");
         this.setabsHref(absHref);
         driver.get(this.getHref());
-        select = driver.findElement(By.name("sessionPopUp"));
-        sessionSelect = new Select(select);
+        select = driver.findElement(By.name("sessionPopUp")); // find HTML/CSS selector name="sessionPopUp"
+        sessionSelect = new Select(select); // create Select object with WebElement 'select' passed through
         sessionSelect.selectByVisibleText(session); // selects the 'given session' option
 
         select2 = driver.findElement(By.name("subjectPopUp"));
-        List<WebElement> option = select2.findElements(By.tagName("option"));
-        courseSelect = new Select(select2);
+        Select courseSelect = new Select(select2);
         submitCourse = driver.findElement(By.name("3.10.7.5")); // finds CSS selector element for 'Choose course' button
 
     }
