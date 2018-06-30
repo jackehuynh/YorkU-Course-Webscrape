@@ -45,8 +45,10 @@ public class ScrapeCourse extends ScrapeCourseInfo implements Runnable {
 
             ChromeOptions chromeOptions = new ChromeOptions();
             chromeOptions.addArguments("--headless");
+            chromeOptions.addArguments("--disable-extensions");
+            chromeOptions.setProxy(null);
             ChromeDriver driver = new ChromeDriver(chromeOptions);
-            driver.manage().timeouts().implicitlyWait(500, TimeUnit.MILLISECONDS);
+            driver.manage().timeouts().implicitlyWait(400, TimeUnit.MILLISECONDS);
             setDriver(driver);
             setSession("Fall/Winter 2018-2019");
 
@@ -186,7 +188,7 @@ public class ScrapeCourse extends ScrapeCourseInfo implements Runnable {
 
         int id = start + 1;
 
-        // loop that clicks through all the course subjects in the list
+        /* loop that clicks through all the course subjects in the list */
         for (int i = getStart(); i < getCounter(); i++) {
             select2 = driver.findElement(By.name("subjectPopUp"));
             List<WebElement> options = select2.findElements(By.tagName("option"));
