@@ -6,6 +6,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.InputMismatchException;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,69 +16,54 @@ import org.jsoup.select.Elements;
 public class ACTScraper {
 
     private String courseName, term;
+    private Element lecture, lab_tutorial;
     private Database db;
 
     public static void main(String[] args) throws SQLException, IOException {
     	
-        ACTScraper scraper = new ACTScraper();
+        ACTScraper FallWinter_Scraper = new ACTScraper("Fall/Winter");
+    	//ACTScraper scrape = new ACTScraper("test");
         
-        try {
-        	scraper.startConnection();
-        } catch (SQLException e) {
-        	e.printStackTrace();
-        } finally {
-            scraper.db.closeConn();
-        }
     }
     
-    public ACTScraper() throws IOException, SQLException {
+    public ACTScraper(String session) throws IOException, SQLException {
     	db = new Database();
     	//db.dropInfoColumn();
+    	
+    	this.startConnection(session);
+    	
+    	//db.closeConn();
     }
 
-    private void startConnection() throws IOException, SQLException { 
+    private void startConnection(String session) throws IOException, SQLException { 
     	Document doc = Jsoup.connect("https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm").userAgent("Mozilla").get();
         
-    	Elements result = doc.select("ul.bodytext")
-                			 .select("a[href]");
+    	Elements link = doc.select("ul.bodytext")
+                		   .select("a[href]");
         
-        final String link = "https://w2prod.sis.yorku.ca/" + result.get(result.size() - 1).attr("href"); // Active Course Timetable link
+        final String actLink = "https://w2prod.sis.yorku.ca/" + link.get(link.size() - 1).attr("href"); // Active Course Timetable link
         
-        Document connect = Jsoup.connect(link).userAgent("Mozilla").get();
+        Document connectToACTList = Jsoup.connect(actLink).userAgent("Mozilla").get();
         
-        /* TODO: Implement code to allow for either Fall-Winter or Summer schedules to be used   */
-        Elements getFW_Schedules = connect.select(":containsOwn(View Fall/Winter)"); // grabs all ACT (Active Course Timetable) links of F/W courses
-        Elements getSummerSchedules = connect.select(":containsOwn(View Summer)"); // grabs all ACT links of Summer courses
+        Elements ACT_SCHEDULE;
         
-        String timetableFaculty[] = new String[getFW_Schedules.size()];
-        
-        for (int i = 0; i < getFW_Schedules.size(); i++) {
-            timetableFaculty[i] = getFW_Schedules.get(i).attr("href");
+        if (session.equals("Fall/Winter")) {
+            Elements FW_ACT = connectToACTList.select(":containsOwn(View Fall/Winter)"); // grabs all ACT (Active Course Timetable) links for F/W courses
+            ACT_SCHEDULE = FW_ACT;
+        } else if (session.equals("Summer")) {
+            Elements SummerSchedules = connectToACTList.select(":containsOwn(View Summer)"); // grabs all ACT links for Summer courses
+            ACT_SCHEDULE = SummerSchedules;
+        } else {
+        	System.out.println("Please only pass string input 'Fall/Winter' or 'Summer' in constructor parameter");
+        	throw new InputMismatchException();
         }
-        scrapeACT(timetableFaculty);
-    }
-    
-    public String getAdditionalInfo(String input, Elements tdTags) {
-    	String info = "";
-    	
-    	if (!input.equals("")) {
-        	info = "\n      " + tdTags.get(tdTags.size()-1).html();
-        	info = info.replace("<br>", "");
-        	info = info.replace("&nbsp;", "");
-    	}
-    	return info;
-    }
-    
-    private String getInstructor(String input, Elements tdTags) {
-    	String instructor = "";
-    	
-    	if(instructor.equals("")) {
-    		instructor = "Instructor: N\\A \n";
-    	} else {
-    		instructor = "Instructor: " + instructor + "\n";
-    	}
-    	
-    	return instructor;
+        
+        String timetableFaculty[] = new String[ACT_SCHEDULE.size()];
+        
+        for (int i = 0; i < ACT_SCHEDULE.size(); i++) {
+            timetableFaculty[i] = ACT_SCHEDULE.get(i).attr("href");
+        }
+        this.scrapeACT(timetableFaculty);
     }
     
     private void scrapeACT(String ACTList[]) throws IOException, SQLException {
@@ -90,10 +77,9 @@ public class ACTScraper {
                 for (int k = 2; k < rows.size(); k++) {
                 	
                     Elements tdTags = rows.get(k).select("td");
-            		Element span3 = tdTags.select("[colspan=3]").first();
-            		Element span5 = tdTags.select("[colspan=5]").first();
+                    initSpanElements(tdTags);
                     
-                    /*  Grabs faculty, course title & department and term */
+                    /*  Grabs faculty, course title, department and term */
                     if (tdTags.hasClass("bodytext")) {
                         setTerm(tdTags.get(2).text());
                         setCourseName(tdTags.get(3).text());
@@ -105,56 +91,31 @@ public class ACTScraper {
                     } else {
                         if (tdTags.size() > 4) { // inserts Tutorial/Lab/Lecture times, instructor, and any additional course info to DB 
                     		
+                        	String section;
+                        	String credit;
+                        	String courseTerm;
                     		String catNumber = null;
                     		String course = null;
                         	String courseType = tdTags.get(1).text();
-                        	String section = "";
-                        	String credit = "      ";
                         	String instructor = tdTags.get(tdTags.size()-2).text();
-                        	String courseTerm = "\n " + getTerm() + "    ";
                         	String additionalInfo = tdTags.get(tdTags.size()-1).text();
                         	
+                        	courseTerm = "\n " + getTerm() + "    ";
                         	additionalInfo = getAdditionalInfo(additionalInfo, tdTags);
-                        	instructor = getInstructor(instructor, tdTags);
+                        	instructor = getInstructor(instructor);
+                        	section = getSection(courseType);
+                        	credit = getCredit(courseType);
+                        	catNumber = getCatNumber(tdTags);
+                        	course = concatCourseInfo(courseTerm, instructor, credit, section, tdTags);
 
-                			if (courseType.length() == 11) { // regular length course info (ex: 1014 3.00 A)
-                				section = "Section " + courseType.charAt(10);                				
-                				credit += "Credit: " + courseType.charAt(5) + courseType.charAt(6) + courseType.charAt(7) + courseType.charAt(8);
-                			} else if (courseType.length() == 12) { // special length course info (ex: 1020P 3.00 A)
-                				section = "Section " + courseType.charAt(11);
-                				credit += "Credit: " + courseType.charAt(6) + courseType.charAt(7) + courseType.charAt(8) + courseType.charAt(9);
-                			}
+                        	String courseInformation = "\n" + course + catNumber + additionalInfo + "\n";
                         	
-                    		if (span3 != null) { /* This section usually displays info for the class/lecture */
-                    			catNumber = tdTags.get(5).text();
-                            	course = "---------------------------------------------------------------------------------\n" 
-                            			+ courseTerm + instructor + credit + " | " + section + " | "
-                            			+ tdTags.get(2).text() + " " // Language of instruction (EN - English, ....)
-                            			+ tdTags.get(3).text() + " " // Class type (LECT, LAB, TUTR, ...)
-                            			+ tdTags.get(4).text() + " ";		 // Class type number (LECT 01, LAB 01, ...)
-                    		} else if (span5 != null) { /* Section displays info for labs/tutorials */
-                    			catNumber = tdTags.get(3).text();
-                            	course = "      " + instructor + "      "
-                            		   + tdTags.get(1).text() + " " // Class type (LECT, LAB, TUTR, ...)
-                            		   + tdTags.get(2).text();		// Class type number (LECT 01, LAB 01, ...)
-                    		}
-                    		
-                        	if(!catNumber.equals("")) {
-                        		catNumber = " | CAT#: " + catNumber;
-                        	}
-
-                        	String courseInformation = "\n" + course + catNumber + additionalInfo;
                         	System.out.print(courseInformation);
-                        	//db.insertCourseInfo(getCourseName(), courseCat);
                         	
-                        	System.out.println();
+                        	//db.insertCourseInfo(getCourseName(), courseInformation);
                         	
                         	Element tbodyTag = tdTags.select("tbody").first();
                         	if (tbodyTag != null) {
-                            	Elements day = tbodyTag.select("[width=15%]"); // day
-                            	Elements time = tbodyTag.select("[width=25%]"); // time and duration
-                            	Elements location = tbodyTag.select("[width=35%]"); // room location
-                            	Elements timeSlots = tbodyTag.select("tr");
                             	Elements timeSlot = tbodyTag.select("td");
                             	insertCourseSchedule(timeSlot, getCourseName());
                         	}
@@ -171,8 +132,8 @@ public class ACTScraper {
 			}
         }
     }
-    
-    private void insertCourseSchedule(Elements times, String courseTitle) throws ParseException {
+
+	private void insertCourseSchedule(Elements times, String courseTitle) throws ParseException {
     	Elements time = times;
     	
     	String result = null;
@@ -206,21 +167,86 @@ public class ACTScraper {
 			*/
     	}
     }
-
-    public void setCourseName(String input) {
-        this.courseName = input;
+    
+    private String getAdditionalInfo(String input, Elements tdTags) {
+    	String info = input;
+    	
+    	if (!input.equals("")) {
+        	info = "\n      " + tdTags.get(tdTags.size()-1).html();
+        	info = info.replace("<br>", "");
+        	info = info.replace("&nbsp;", "");
+    	}
+    	return info;
     }
-
-    public String getCourseName() {
-        return this.courseName;
+    
+    private String getInstructor(String input) {
+    	if(input.equals("")) {
+    		return "Instructor: N\\A \n";
+    	} else {
+    		return "Instructor: " + input + "\n";
+    	}
     }
-
-    private void setTerm(String input) {
-        this.term = input;
+    
+    private String getSection(String courseType) {
+    	if (courseType.length() == 11) {
+    		return "Section " + courseType.charAt(10); 
+    	} else if (courseType.length() == 12) {
+    		return "Section " + courseType.charAt(11); 
+    	}
+    	return "N\\A      ";
     }
-
-    private String getTerm() {
-        return this.term;
+    
+    private String getCredit(String courseType) {
+    	
+    	if (courseType.length() == 11) {
+			return "      Credit: " + courseType.charAt(5) + courseType.charAt(6) + courseType.charAt(7) + courseType.charAt(8);
+    	} else if (courseType.length() == 12) {
+    		return "      Credit: " + courseType.charAt(6) + courseType.charAt(7) + courseType.charAt(8) + courseType.charAt(9); 
+    	}
+    	return "N\\A      ";
+    }
+    
+    private String getCatNumber(Elements tdTags) {
+    	
+    	String catNum = "";
+ 
+		if (getLecture() != null) {
+			catNum = tdTags.get(5).text();
+		} else if (getLab_Tutorial() != null) {
+			catNum = tdTags.get(3).text();
+		}
+		
+    	if(!catNum.equals("")) {
+    		catNum = " | CAT#: " + catNum;
+    	}
+		
+		return catNum;
+    }
+    
+    private String concatCourseInfo(String courseTerm, String instructor, String credit, String section, Elements tdTags) {
+    	
+    	String course = "";
+    	
+		if (getLecture() != null) {
+        	course = "---------------------------------------------------------------------------------\n" 
+        			+ courseTerm + instructor + credit + " | " + section + " | "
+        			+ tdTags.get(2).text() + " " // Language of instruction (EN - English, ....)
+        			+ tdTags.get(3).text() + " " // Class type (LECT, LAB, TUTR, ...)
+        			+ tdTags.get(4).text() + " ";		 // Class type number (LECT 01, LAB 01, ...)
+		} else if (getLab_Tutorial() != null) {
+        	course = "      " + instructor + "      "
+        		   + tdTags.get(1).text() + " " // Class type (LECT, LAB, TUTR, ...)
+        		   + tdTags.get(2).text();		// Class type number (LECT 01, LAB 01, ...)
+		}
+		
+    	return course;
+    }
+     
+    private String getLocation(String location) {
+    	if (location.equals("")) {
+        	return "N\\A      ";
+    	}
+    	return location;
     }
     
     private String getDays(String day) {
@@ -243,21 +269,14 @@ public class ACTScraper {
     	}
     }
     
-    private String getLocation(String location) {
-    	if (location.equals("")) {
-        	return "N\\A      ";
-    	}
-    	return location;
-    }
-    
     private String convertTime(String time) throws ParseException {
     	/* these times usually mean the course
-    	 * is online/thesis/supervised study/others */
+    	 * is either online/thesis/supervised study/others */
     	if(time.equals("0:00") || time.equals("0")) {
     		return time;
     	}
     	
-    	/* Convert 24-hour to 12-hour time format. */
+    	/* Converts 24-hour format to 12-hour time format. */
     	if(!time.equals("")) {
             DateFormat date = new SimpleDateFormat("HH:mm"); //HH for hour of the day (0 - 23)
             DateFormat f = new SimpleDateFormat("h:mma");
@@ -288,5 +307,34 @@ public class ACTScraper {
     	} else {
         	return newHour + "h " + newMin + "m ";
     	}
+    }
+    
+    private void initSpanElements(Elements tdTags) {
+    	lecture = tdTags.select("[colspan=3]").first(); 	 /* This HTML element usually displays info for class/lectures */
+    	lab_tutorial = tdTags.select("[colspan=5]").first(); /* This HTML element usually displays info for labs/tutorials */
+    }
+    
+    private Element getLecture() {
+    	return this.lecture;
+    }
+    
+    private Element getLab_Tutorial() {
+    	return this.lab_tutorial;
+    }
+    
+    private void setCourseName(String input) {
+        this.courseName = input;
+    }
+
+    private String getCourseName() {
+        return this.courseName;
+    }
+
+    private void setTerm(String input) {
+        this.term = input;
+    }
+
+    private String getTerm() {
+        return this.term;
     }
 }
