@@ -30,7 +30,6 @@ public class Database {
         conn = null;
         Statement stmt = null;
         setdbName("`fallwinter-1819`");
-        //dbName = "`fallwinter-1819`";
         try {
             conn = DriverManager.getConnection(host, user, pass);
             System.out.println("Connected!");
@@ -210,7 +209,6 @@ public class Database {
 				stmt.close();
 			}
 		}
-    	
     }
 
     public void closeConn() throws SQLException {
