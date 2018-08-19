@@ -1,7 +1,6 @@
 package webscrape;
 
 import java.sql.*;
-import java.math.*;
 
 public class Database {
 
@@ -154,9 +153,13 @@ public class Database {
                     + " '" + course + "',"
                     + " '" + id + "', "
                     + " '" + title + "', "
-                    + " '" + description + "') ";
-            //+ " ON DUPLICATE KEY UPDATE "
-            // + "NAME='" + subject + "'";
+                    + " '" + description + "') "
+                    + " ON DUPLICATE KEY UPDATE "
+                    + "NAME='" + course + "',"
+                    + "Subject_id='" + id + "',"
+                    + "Title='" + title + "',"
+                    + "Description='" + description + "', "
+                    + "info=VALUES(info)";
 
             stmt.executeUpdate(query);
 
@@ -164,6 +167,7 @@ public class Database {
         } catch (SQLException e) {
             System.out.println("Failed to insert. " + course);
             e.printStackTrace();
+            throw new SQLException();
         } finally {
             if (stmt != null) {
                 stmt.close();
@@ -196,7 +200,6 @@ public class Database {
 //            }
 //        }
 //    }
-
     public void insertCourseInfo(String code, String info) throws SQLException {
         String courseInfo = escapeCharacter(info);
 
@@ -214,6 +217,7 @@ public class Database {
         } catch (SQLException e) {
             System.out.println("Failed to insert/update course info: " + code);
             e.printStackTrace();
+            throw new SQLException();
         } finally {
             if (stmt != null) {
                 stmt.close();
@@ -233,6 +237,7 @@ public class Database {
         } catch (SQLException e) {
             System.out.println("What would go wrong here..?");
             e.printStackTrace();
+            throw new SQLException();
         } finally {
             stmt.executeUpdate(query);
             if (stmt != null) {

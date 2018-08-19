@@ -30,7 +30,6 @@ public class ACTScraper {
     public static void main(String[] args) throws SQLException, IOException {
 
         ACTScraper FallWinter_Scraper = new ACTScraper("Fall/Winter");
-        //ACTScraper scrape = new ACTScraper("test");
 
     }
 
@@ -72,33 +71,8 @@ public class ACTScraper {
         this.scrapeACT(timetableFaculty);
     }
 
-    private void setFaculty(String faculty) {
-        this.faculty = faculty;
-    }
-
-    private String getFaculty() {
-        return this.faculty;
-    }
-
-    private String getDept() {
-        return this.dept;
-    }
-
-    private void setDept(String dept) {
-        this.dept = dept;
-    }
-    
-    private void setCourseCode(String code) {
-        this.courseCode = code;
-    }
-    
-    private String getCourseCode() {
-        return this.courseCode;
-    }
-
     private String extractCourseCode(String courseCode) {
-//        System.out.println(courseCode.substring(0, courseCode.length()-1));
-        return courseCode.substring(0, courseCode.length()-2);
+        return courseCode.substring(0, courseCode.length() - 2);
     }
 
     private void scrapeACT(String ACTList[]) throws IOException, SQLException {
@@ -120,11 +94,8 @@ public class ACTScraper {
                         setDept(tdTags.get(1).text());
                         setTerm(tdTags.get(2).text());
                         setCourseName(tdTags.get(3).text());
-                        
-                        tdTags = rows.get(k+1).select("td");
-                        //System.out.println("<br>" + faculty + "/" + department + "  " + getCourseName() + "<br>");
-                        //System.out.print("Term<br>");
-//                        System.out.println("Inserting: " + getCourseName());
+
+                        tdTags = rows.get(k + 1).select("td");
                         courseCode = getFaculty() + "/" + getDept() + " " + extractCourseCode(tdTags.get(1).text());
                         setCourseCode(courseCode);
                         db.insertCourseInfo(courseCode, "<hr><dt><u>Term</u></dt>");
@@ -146,7 +117,6 @@ public class ACTScraper {
                             String course = concatCourseInfo(courseTerm, instructor, credit, section, tdTags);
                             String courseInformation = course + catNumber + "</dd><dd>" + additionalInfo + "</dd><br>";
 
-//                            System.out.print(courseInformation);
                             db.insertCourseInfo(getCourseCode(), courseInformation);
                             //System.out.println("Successfully insert/updated course info: " + getCourseCode());
 
@@ -158,10 +128,9 @@ public class ACTScraper {
                         }
                     }
                 }
-                System.out.println("--------------------------------------------------------------------------------------");
             } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();
-                System.out.println("<br> No classes at " + ACTList[i] + "<br><br>");
+                System.out.println("No classes at " + ACTList[i]);
                 continue;
             } catch (ParseException e) {
                 e.printStackTrace();
@@ -348,6 +317,30 @@ public class ACTScraper {
         /* This HTML element usually displays info for class/lectures */
         lab_tutorial = tdTags.select("[colspan=5]").first();
         /* This HTML element usually displays info for labs/tutorials */
+    }
+
+    private void setFaculty(String faculty) {
+        this.faculty = faculty;
+    }
+
+    private String getFaculty() {
+        return this.faculty;
+    }
+
+    private String getDept() {
+        return this.dept;
+    }
+
+    private void setDept(String dept) {
+        this.dept = dept;
+    }
+
+    private void setCourseCode(String code) {
+        this.courseCode = code;
+    }
+
+    private String getCourseCode() {
+        return this.courseCode;
     }
 
     private Element getLecture() {

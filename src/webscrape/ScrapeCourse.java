@@ -20,7 +20,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 public class ScrapeCourse extends ScrapeCourseInfo implements Runnable {
 
     private String link, threadMSG;
-    private List<String> AtoF, GtoM, NtoZ;
     private int start, counter;
     private Database db;
 
@@ -76,87 +75,6 @@ public class ScrapeCourse extends ScrapeCourseInfo implements Runnable {
 
     public String getLink() {
         return this.link;
-    }
-
-    /*
-    public void initialize_A_to_F(List<WebElement> sort) {
-        Map<Integer, String> AtoF = new HashMap<Integer, String>();
-        for (int i = 0; i < sort.size(); i++) {
-            if (sort.get(i).getText().startsWith("^[N-Zn-z]")) {
-                AtoF.put(i, sort.get(i).getText());
-            }
-        }
-    }
-     */
-    public List<String> getAtoEList() {
-        return AtoF;
-    }
-
-    public List<String> getFtoMList() {
-        return GtoM;
-    }
-
-    public List<String> getNtoZList() {
-        return NtoZ;
-    }
-
-    public void setCounters(List<WebElement> sort, String reg) {
-        boolean cond = false;
-        boolean cond2 = true;
-        boolean cond3 = true;
-        boolean cond4 = true;
-        String endReg = "";
-        start = 0;
-        counter = 0;
-        if (reg.equals("^[A-Ea-E")) {
-            endReg = "^[Ff]";
-        } else if (reg.equals("F-Mf-m")) {
-            endReg = "^[Nn]";
-        } else if (reg.equals("N-Rn-r")) {
-            endReg = "^[Ss]";
-        } else {
-            endReg = "^[Zz]";
-        }
-        for (int i = 0; i < sort.size() && cond4; i++) {
-            if (sort.get(i).getText().startsWith(reg)) {
-                cond = true;
-                if (cond && cond2) {
-                    cond2 = false;
-                    start = i;
-                }
-                counter++;
-            }
-            if (sort.get(i).getText().startsWith(endReg) && cond3) {
-                cond4 = false;
-            }
-        }
-    }
-
-    public void initialize_A_to_F(List<WebElement> sort) {
-        AtoF = new ArrayList<String>();
-        for (int i = 0; i < sort.size(); i++) {
-            if (sort.get(i).getText().startsWith("^[A-Ea-e]")) {
-                AtoF.add(sort.get(i).getText());
-            }
-        }
-    }
-
-    public void initialize_G_to_M(List<WebElement> sort) {
-        GtoM = new ArrayList<String>();
-        for (int i = 0; i < sort.size(); i++) {
-            if (sort.get(i).getText().startsWith("^[G-Mg-m]")) {
-                GtoM.add(sort.get(i).getText());
-            }
-        }
-    }
-
-    public void initialize_N_to_Z(List<WebElement> sort) {
-        NtoZ = new ArrayList<String>();
-        for (int i = 0; i < sort.size(); i++) {
-            if (sort.get(i).getText().startsWith("^[N-Zn-z]")) {
-                NtoZ.add(sort.get(i).getText());
-            }
-        }
     }
 
     public int getStart() {
