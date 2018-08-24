@@ -1,70 +1,128 @@
 package webscrape;
 
-import java.awt.AWTException;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
+import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class CourseScraper extends ScraperHelper {
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-    public static void main(String[] args) throws IOException, AWTException {
+public class CourseScraper {
 
-        ChromeDriver webDriver = createDriver("Headless");
+    public static void main(String[] args) throws UnsupportedEncodingException, IOException {
 
-        SubjectScraper scrape = new SubjectScraper("Fall/Winter 2018-2019", "2018", webDriver);
+        CourseScraper scrape = new CourseScraper("2018", "FW");
+        scrape.setFileLocation("courseTest.txt");
+        scrape.scrapeCourseList();
+    }
 
-        try {
-            scrape.startConnection();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+    private String year, session;
+    private final List<String> courses = new ArrayList<>();
+    private File file;
+
+    public CourseScraper(String year, String session) {
+        this.year = year;
+        this.session = session;
+    }
+
+    void scrapeCourseList() throws FileNotFoundException, UnsupportedEncodingException, IOException {
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("subjects.txt"), "UTF-8"))) {
+
+//            String pattern = "([^(),]+)";
+//            String pattern = "\\(([^)]*)\\)";
+
+            // regex to isolate faculty name from text
+            String pattern = "[^(),]+";
+            Pattern p = Pattern.compile(pattern);
+
+            String line = "";
+
+            // Reads line by line from specified text file
+            while ((line = reader.readLine()) != null) {
+
+                String subject = extractSubject(line);
+                String faculty = extractFaculty(line);
+
+                Matcher match = p.matcher(faculty);
+
+                while (match.find()) {
+                    faculty = match.group().trim();
+                    connectToCourseList(faculty, subject);
+                }
+            }
+        }
+
+    }
+
+    private String extractFaculty(String faculty) {
+        return faculty.substring(faculty.lastIndexOf('-') + 1).trim();
+    }
+
+    private String extractSubject(String subject) {
+        if (subject.contains("-")) {
+            subject = subject.replace("-", " ");
+        }
+        return subject.substring(0, 4);
+    }
+
+    public void setFileLocation(String location) {
+        this.file = new File(location);
+    }
+
+    private Elements getCourseCode(Document doc) {
+        return doc.select("td[width='16%']");
+    }
+
+    private Elements getCourseName(Document doc) {
+        return doc.select("td[width='24%']");
+    }
+
+    public void connectToCourseList(String faculty, String subject) throws IOException {
+        final String SITE = "https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm.woa/wa/crsq1?"
+                + "faculty=" + faculty + "&subject=" + subject + "&academicyear=" + this.year + "&studysession=" + this.session;
+
+        Document doc = Jsoup.connect(SITE).userAgent("Mozilla")
+                .timeout(6000)
+                .maxBodySize(0)
+                .get();
+
+        if (doc.select("table.cellpadding").text().contains("parameter")) {
+            throw new InputMismatchException("Error at: " + faculty + " and " + subject);
+        }
+
+        Elements courseCode = getCourseCode(doc);
+        Elements courseName = getCourseName(doc);
+
+//        Iterator<Element> courseCode = courseList.iterator();
+//        Iterator<Element> courseTitle = courseLists.iterator();
+
+        for (int i = 0; i < courseCode.size(); i++) {
+            System.out.println(courseCode.get(i).text() + " " + courseName.get(i).text());
+            courses.add(courseCode.get(i).text() + " " + courseName.get(i).text());
         }
     }
 
-    private String year;
-    private String session;
-    private ChromeDriver driver;
-    String prefix = "https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm.woa/wa/crsq?fa="
-            + "LE" + "&sj=" + "EECS" + "&cn=" + "1012" + "&cr=" + "3.00" + "&ay=" + "2018" + "&ss=" + "FW";
+    public void writeToFile(String location) throws FileNotFoundException {
+        this.file = new File(location);
 
-    public CourseScraper(String session, String year, ChromeDriver driver) {
-        this.session = session;
-        this.driver = driver;
-        this.year = year;
-    }
-
-    /*
-    Inside course page
-     */
-    public void scrapeCourse() {
-
-        List<WebElement> courseCode = driver.findElements(By.cssSelector("td[width='16%']"));
-
-        for (int i = 0; i < courseCode.size(); i++) {
-
-            String course = courseCode.get(i).getText();
-            String code = "";
-
-            switch (course.length()) {
-                case 15:
-                    // Faculty code is only 2 letters (Ex: BC - Bethune College)
-                    code = "" + course.charAt(3) + course.charAt(4);
-                    break;
-                case 16:
-                    // Faculty code is 3 letters (Ex: CAT, CCY, ...)
-                    code = "" + course.charAt(3) + course.charAt(4) + course.charAt(5);
-                    break;
-                case 17:
-                case 18:
-                    code = "" + course.charAt(3) + course.charAt(4) + course.charAt(5) + course.charAt(6); // Faculty code is 4/5 letters (Ex: EECS, BIOL, etc.)
-                    break;
-                default:
-                    break;
+        try (PrintWriter writer = new PrintWriter(file)) {
+            for (int i = 0; i < courses.size(); i++) {
+                writer.println(courses.get(i));
             }
-
-            System.out.println(code);
         }
     }
 }
