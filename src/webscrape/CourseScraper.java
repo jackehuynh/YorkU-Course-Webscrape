@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class CourseScraper {
@@ -26,12 +25,10 @@ public class CourseScraper {
 
         CourseScraper scrape = new CourseScraper("2018", "FW");
         scrape.scrapeCourseList();
-//        scrape.writeCourseList("courseList.txt");
-//        scrape.writeCourseDescription("courseDescriptions.txt");
-
-        String pattern = "([^-{}]*)";
+        scrape.writeCourseList("src/textfiles/courseList.txt");
+        scrape.writeCourseDescription("src/textfiles/courseDescriptions.txt");
     }
-    int count = 0;
+    
     private String year, session;
     private final List<String> courses = new ArrayList<>();
     private final List<String> courseDescriptions = new ArrayList<>();
@@ -43,15 +40,13 @@ public class CourseScraper {
 
     public void scrapeCourseList() throws FileNotFoundException, UnsupportedEncodingException, IOException {
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("subjects.txt"), "UTF-8"))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/textfiles/subjects.txt"), "UTF-8"))) {
 
-//            String pattern = "([^(),]+)";
-//            String pattern = "\\(([^)]*)\\)";
             // regex to isolate faculty name from text
             String pattern = "[^(),]+";
             Pattern p = Pattern.compile(pattern);
 
-            String line = "";
+            String line;
 
             // Reads line by line from specified text file
             while ((line = reader.readLine()) != null) {
@@ -65,12 +60,11 @@ public class CourseScraper {
                     faculty = match.group().trim();
                     connectToCourseList(faculty, subject);
                 }
-                System.out.println("Count: " + count);
             }
         }
     }
 
-    public void connectToCourseList(String faculty, String subject) throws IOException {
+    private void connectToCourseList(String faculty, String subject) throws IOException {
         final String SITE = "https://w2prod.sis.yorku.ca/Apps/WebObjects/cdm.woa/wa/crsq1?"
                 + "faculty=" + faculty + "&subject=" + subject + "&academicyear=" + this.year + "&studysession=" + this.session;
 
@@ -88,34 +82,29 @@ public class CourseScraper {
 //        Iterator<Element> courseTitle = courseLists.iterator();
     }
 
-    public void scrapeCourseDescription(Document doc) throws IOException {
+    private void scrapeCourseDescription(Document doc) throws IOException {
         String prefix = "https://w2prod.sis.yorku.ca/";
+        
         Elements scheduleLinks = doc.select("td[width='30%'] > a");
+        Elements courseCode = getCourseCode(doc);
+        Elements courseName = getCourseName(doc);
 
-        Elements courseCode = doc.select("td[width='16%']");
-        Elements courseName = doc.select("td[width='24%']");
-
-//        Elements courseCode = getCourseCode(doc);
-//        Elements courseName = getCourseName(doc);
         for (int i = 0; i < scheduleLinks.size(); i++) {
 
             String link = scheduleLinks.get(i).attr("href");
+            String site = prefix + link;
 
-            Document start = Jsoup.connect(prefix + link).userAgent("Mozilla")
+            Document start = Jsoup.connect(site).userAgent("Mozilla")
                     .timeout(15000)
                     .maxBodySize(0)
                     .get();
 
-//            String course = courseCode.get(i).text() + " - " + courseName.get(i).text();
-//            String description = "{" + getCourseDescription(start) + "}";
-//            System.out.println(course);
-//            courses.add(course);
-//            courseDescriptions.add(description);
-//            System.out.println(courseCode.get(i).text() + " - " + courseName.get(i).text());
-//            System.out.println(getCourseDescription(start));
-            courses.add(courseCode.get(i).text() + " - " + courseName.get(i).text());
-            courseDescriptions.add("{" + getCourseDescription(start) + "}");
-            count++;
+            String course = courseCode.get(i).text() + "-" + courseName.get(i).text();
+            String description = "{" + getCourseDescription(start) + "}";
+            
+            System.out.println(course);
+            courses.add(course);
+            courseDescriptions.add(description);
         }
     }
 
@@ -127,7 +116,6 @@ public class CourseScraper {
         if (result.isEmpty()) {
             return "N/A";
         }
-
         return result;
     }
 
@@ -171,6 +159,14 @@ public class CourseScraper {
                 writer.println(courses.get(i) + " " + courseDescriptions.get(i));
             }
         }
+    }
+    
+    public String getSession() {
+        return this.session;
+    }
+    
+    public String getYear() {
+        return this.year;
     }
 
     private Elements getCourseCode(Document doc) {

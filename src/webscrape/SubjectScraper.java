@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import org.openqa.selenium.chrome.ChromeDriver;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SubjectScraper {
 
@@ -24,7 +22,7 @@ public class SubjectScraper {
 
         try {
             scrape.startConnection();
-//            scrape.writeToFile("subjects.txt");
+            scrape.writeToFile("src/textfiles/subjects.txt");
         } finally {
             webDriver.quit();
         }
@@ -65,25 +63,10 @@ public class SubjectScraper {
     }
 
     public void extractFacultyAndSubjects(List<WebElement> tags) {
-//        String pattern = "\\(([^)]*)\\)";
-//        String pattern = "\\((.*)\\)";
-
-        String pattern = "([^(),]+)";
-        Pattern p = Pattern.compile(pattern);
-
+        
         for (int i = 0; i < tags.size(); i++) {
 
             String s = tags.get(i).getText();
-
-//            String subject = tags.get(i).getText().substring(0, 4).trim();
-//            String faculty = s.substring(s.lastIndexOf('-') + 1).trim();
-//
-//            Matcher m = p.matcher(faculty);
-//            String combo = "";
-//
-//            while (m.find()) {
-//                combo += "(" + m.group().trim() + ")";
-//            }
 
             System.out.println(s);
             subjects.add(s);
@@ -99,5 +82,4 @@ public class SubjectScraper {
             }
         }
     }
-
 }
