@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class CourseScraper {
@@ -28,7 +29,7 @@ public class CourseScraper {
         scrape.writeCourseList("src/textfiles/courseList.txt");
         scrape.writeCourseDescription("src/textfiles/courseDescriptions.txt");
     }
-    
+
     private String year, session;
     private final List<String> courses = new ArrayList<>();
     private final List<String> courseDescriptions = new ArrayList<>();
@@ -69,10 +70,14 @@ public class CourseScraper {
                 + "faculty=" + faculty + "&subject=" + subject + "&academicyear=" + this.year + "&studysession=" + this.session;
 
         Document doc = Jsoup.connect(SITE).userAgent("Mozilla")
-                .timeout(15000)
+                .timeout(20000)
                 .maxBodySize(0)
                 .get();
 
+        /*
+        If faculty and subject query doesn't give any result, it'd mean the course list
+        would require different parameters --> throws exception.
+        */
         if (doc.select("table.cellpadding").text().contains("parameter")) {
             throw new InputMismatchException("Error at: " + faculty + " and " + subject);
         }
@@ -84,7 +89,7 @@ public class CourseScraper {
 
     private void scrapeCourseDescription(Document doc) throws IOException {
         String prefix = "https://w2prod.sis.yorku.ca/";
-        
+
         Elements scheduleLinks = doc.select("td[width='30%'] > a");
         Elements courseCode = getCourseCode(doc);
         Elements courseName = getCourseName(doc);
@@ -95,13 +100,13 @@ public class CourseScraper {
             String site = prefix + link;
 
             Document start = Jsoup.connect(site).userAgent("Mozilla")
-                    .timeout(15000)
+                    .timeout(20000)
                     .maxBodySize(0)
                     .get();
 
             String course = courseCode.get(i).text() + "-" + courseName.get(i).text();
             String description = "{" + getCourseDescription(start) + "}";
-            
+
             System.out.println(course);
             courses.add(course);
             courseDescriptions.add(description);
@@ -160,11 +165,11 @@ public class CourseScraper {
             }
         }
     }
-    
+
     public String getSession() {
         return this.session;
     }
-    
+
     public String getYear() {
         return this.year;
     }

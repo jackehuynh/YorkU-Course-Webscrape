@@ -34,10 +34,10 @@ public class ACTScraper {
     }
 
     public ACTScraper(String session) throws IOException, SQLException {
-        db = new Database();
-        db.emptyInfoColumn();
+//        db = new Database();
+//        db.emptyInfoColumn();
         this.startConnection(session);
-        db.closeConn();
+//        db.closeConn();
     }
 
     private void startConnection(String session) throws IOException, SQLException {
@@ -98,7 +98,7 @@ public class ACTScraper {
                         tdTags = rows.get(k + 1).select("td");
                         courseCode = getFaculty() + "/" + getDept() + " " + extractCourseCode(tdTags.get(1).text());
                         setCourseCode(courseCode);
-                        db.insertCourseInfo(courseCode, "<hr><dt><u>Term</u></dt>");
+//                        db.insertCourseInfo(courseCode, "<hr><dt><u>Term</u></dt>");
                     } else {
                         if (tdTags.size() > 4) { // inserts Tutorial/Lab/Lecture times, instructor, and any additional course info to DB 
 
@@ -116,8 +116,9 @@ public class ACTScraper {
 
                             String course = concatCourseInfo(courseTerm, instructor, credit, section, tdTags);
                             String courseInformation = course + catNumber + "</dd><dd>" + additionalInfo + "</dd><br>";
-
-                            db.insertCourseInfo(getCourseCode(), courseInformation);
+                            
+                            System.out.println(courseInformation);
+//                            db.insertCourseInfo(getCourseCode(), courseInformation);
                             //System.out.println("Successfully insert/updated course info: " + getCourseCode());
 
                             Element tbodyTag = tdTags.select("tbody").first();
@@ -179,13 +180,13 @@ public class ACTScraper {
             }
 
             result += "</dd><br>";
-//             System.out.print(result);
-            try {
-                db.insertCourseInfo(courseTitle, result);
-            } catch (SQLException e) {
-                e.printStackTrace();
-                System.out.println("Course (" + courseTitle + ") schedule failed to insert");
-            }
+             System.out.print(result);
+//            try {
+//                db.insertCourseInfo(courseTitle, result);
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//                System.out.println("Course (" + courseTitle + ") schedule failed to insert");
+//            }
         }
     }
 

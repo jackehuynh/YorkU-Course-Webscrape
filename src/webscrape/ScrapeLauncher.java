@@ -18,8 +18,9 @@ public class ScrapeLauncher {
 
         /*
         Start SubjectScraper.java, CourseScraper.java, ACTScraper.java, and DB.java here
-        Populate db
+        Populate db (if required?)
          */
+        
         ChromeDriver webDriver = createDriver("Headless");
         SubjectScraper scrapeSubjects = new SubjectScraper("Fall/Winter 2018-2019", "2018", webDriver);
 
@@ -35,8 +36,10 @@ public class ScrapeLauncher {
         scrapeCourses.scrapeCourseList();
         scrapeCourses.writeCourseList("src/textfiles/courseList.txt");
         scrapeCourses.writeCourseDescription("src/textfiles/courseDescriptions.txt");
-
         descriptionScraper();
+        
+        ImprovedACT ACT_Scraper = new ImprovedACT();
+        ACT_Scraper.startConnection("Fall/Winter");
     }
 
     public static void descriptionScraper() throws FileNotFoundException, UnsupportedEncodingException, IOException {
